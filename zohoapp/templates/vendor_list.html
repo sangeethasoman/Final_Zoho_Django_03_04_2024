@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+  #over:hover{
+        background-color: rgba(110, 110, 110, 0.616);
+        
+    }
+
+    .modal{
+      z-index: 9999;
+      overflow: scroll;
+    }
+</style>
+{% if messages %}
+        <div class="alert bg-danger alert-dismissible fade show" role="alert" style="z-index: 9999;">
+            {% for message in messages %}
+            {{ message }}
+            {% endfor %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+  <div  style="top: 7rem; " >
+    <div class="pb-4"><a class="text-white" style="font-size: 2rem;">All Vendors</a></div>
+    <div class="row mb-4">
+      
+      <div class=" col-md-3 d-flex justify-content-between align-items-center">
+      </div>
+      <div class="col-md-6"></div>
+      <div class="col-md-3 d-flex justify-content-end">
+        <a class="btn btn-outline-warning p-2 mr-2" id="importBtn" data-toggle="modal" data-target="#import_modal"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Import</a>&nbsp;
+        <a class="btn btn-outline-warning p-2 mr-2" onclick="exportAsXLS()"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Export</a>&nbsp;
+      </div>
+  </div>
+  <div class="row mb-4">
+      
+    <div class=" col-md-3 d-flex justify-content-between align-items-center">
+      
+            <input type="text" id="search" placeholder="Search..." class="form-control text-dark bg-light" autocomplete="off">
+            <!-- <a href="" class="btn btn-outline-warning fa fa-sort text-right px-3 py-2" role="button"
+            style="margin-left: 5px;"></a> -->
+            <a class="btn text-center px-3 py-2 btn-outline-warning" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+            role="button" style="margin-left: 5px;"><i class="fa fa-sort "></i>
+            </a>
+            <div class="dropdown-menu ">
+                <a class="dropdown-item" href="{% url 'view_vendor_list' %}">All</a>
+                <a class="dropdown-item" href="{% url 'sort_vendor_by_name' %}">Vendor Name</a>
+                <a class="dropdown-item" href="{% url 'sort_vendor_by_amount' %}">Balance Amount</a>
+            </div>
+            
+    </div>
+    <div class="col-md-6"></div>
+    <div class="col-md-3 d-flex justify-content-end">
+        
+        <a class="btn text-center px-4 pt-2 btn-outline-warning" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+        role="button" ><i class="fa fa-filter"></i>
+        </a>
+        <div class="dropdown-menu ">
+            <a class="dropdown-item" href="{% url 'view_vendor_list' %}">All</a>
+            <a class="dropdown-item" href="{% url 'view_vendor_active' %}">Active</a>
+            <a class="dropdown-item" href="{% url 'view_vendor_inactive' %}">Inactive</a>
+        </div>
+        <a href="{% url 'vendor' %}" class="btn btn-outline-warning fa fa-plus text-right px-3 py-2" role="button" style="margin-left: 5px;">
+            <span class="mt-2">&nbsp;&nbsp;New</span>
+        </a> </div>
+</div>
+        <!-- <div class="row">
+            
+            <div class="col-md-6 form-inline" style="margin-left: 55rem;margin-top: -2rem;"><a style="color: #ccc;background-color: rgb(190, 131, 4);" class="btn  mr-2"  href="{% url 'vendor' %}"><i class="fa-solid fa-plus "></i>New</a>
+
+            </div>
+        </div>    -->
+    
+        <div class="row">
+            <div class="col-sm-12 ">
+              <div style="width: 100%; overflow-x: auto;">
+                <table class="table  text-white" id="myTable" >
+                    <thead>
+                      <tr>
+                        <th>VENDOR NAME</th>
+                        <th>PHONE NUMBER</th>
+                        <th>MAIL ID</th>
+                        <th>GST TREATMENT</th>
+                        <th>GST NO</th>
+                        <th>OPENING BALANCE</th>
+                        <th>STATUS</th>
+                        <th>BALANCE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for v in data %}
+             
+                      <tr id="over" class="clickable-row" data-href="{% url 'view_vendor_details' v.id %}">
+             
+                       <!-- <td onclick="location.href ='{% url 'detail' v.id %}' " > {{v.Name}}</td> -->
+                        <td>{{v.first_name}} {{v.last_name}}</td>
+                        <td>{{v.vendor_wphone}}</td>
+                        <td>{{v.vendor_email}}</td>
+                        <td ><textarea class="bg-transparent text-white border-0" name="" id="" cols="45" rows="2">{{v.gst_treatment}}</textarea></td>
+                        <td>{{v.gst_number}}</td>
+                        <td>{{v.opening_bal}}</td>
+                        <td>{{v.status}}</td>
+                        <td>{{v.opening_bal}}</td>
+                        <td><a href="{% url 'delete_vendor' v.id %}" onclick="alert('Do You Want to Delete?')"><i class="fas fa-trash text-danger text-center"></i></a></td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+                <br><br><br><br><br>
+            </div>
+            <div class="col-sm-12 col-md-1 col-lg-1"></div>
+
+        </div>
+    <!-- </div> -->
+
+</div>
+<div class="modal fade" id="import_modal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="background: rgb(32, 35, 37);border-radius: 20px;">
+      <div class="modal-header " style="background: rgb(32, 35, 37);">
+        <h1 class="text-light">Import Vendor</h1>
+      </div>
+      <div class="modal-body" style="background: rgb(32, 35, 37);">
+        <div class="card p-3 m-3">        
+          <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+              <h5 class="text-danger">IMPORTANT:</h5>
+              <p class="text-light">Place of supply should be in the following format ,eg: for kerala  Type [KL]-Kerala  </p><br>
+              <div class="row">
+                  <div class="col-md-4">
+                      [AN] Andaman and Nicobar Islads<br>
+                      [AD] Andhra Predhesh <br>
+                      [AR] Arunachal Predesh <br>
+                      [AS] Assam<br>
+                      [BR] Bihar<br>
+                      [CH] Chandigarh<br>
+                      [CG] Chhattisgarh<br>
+                      [DNH] Dadra and Nagar Haveli<br>
+                      [DD] Damn anad Diu<br>
+                      [DL] Delhi<br>
+                      [GA] Goa<br>
+                      [GJ] Gujarat<br>
+                      [HR] Haryana<br>
+
+                  </div>
+                  <div class="col-md-4">
+                      [HP] Himachal Predesh<br>
+                      [JK] Jammu and Kashmir<br>
+                      [JH] Jharkhand<br>
+                      [KA] Karnataka<br>
+                      [KL] Kerala<br>
+                      [LA] Ladakh<br>
+                      [LD] Lakshadweep<br>
+                      [MP] Madhya Predesh<br>
+                      [MH] Maharashtra<br>
+                      [MN] Manipur<br>
+                      [ML] Meghalaya<br>
+                      [MZ] Mizoram<br>
+                      
+                  </div>
+                  <div class="col-md-4">
+                      [NL] Nagaland<br>
+                      [OD] Odisha<br>
+                      [PY] Puducherry<br>
+                      [PB] Punjab<br>
+                      [RJ] Rajasthan<br>
+                      [SK] Sikkim<br>
+                      [TN] Tamil Nadu<br>
+                      [TS] Telangana<br>
+                      [TR] Tripura<br>
+                      [UP] Uttar Predesh<br>
+                      [UK] Uttarakhand<br>
+                      [WB] West Bengal<br>
+                      [OT] Other Territory<br>
+                  </div>
+              </div><br>
+              <p class="text-danger">MANDATORY FIELDS: Salutation, First Name, Last Name, Email, GST Treatment, PAN No, Opening Balance, Opening Balance Type.<br>
+            </p>
+            </div>
+          </div>
+        </div>
+        <a href="{% url 'downloadVendorSampleImportFile' %}" class="text-primary" style="font-size:medium;">Download File to Edit</a><br><br>
+
+        <form action="{% url 'import_vendor' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="file" name="excel_file" class="form-control text-dark" style="width: 50%;"><br>
+          <button class="btn btn-outline-warning mt-3">IMPORT</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $("#search").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      $("#myTable tr").filter(function () {
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+      });
+    });
+  });
+</script>
+
+<script>
+  // Add click event listener to all rows with class "clickable-row"
+  const rows = document.querySelectorAll('.clickable-row');
+  rows.forEach(row => {
+    row.addEventListener('click', () => {
+      // Get the URL from the "data-href" attribute
+      const url = row.getAttribute('data-href');
+      // Navigate to the URL
+      window.location.href = url;
+    });
+  });
+
+  function exportAsXLS() {
+            // Assuming you have data in a table format, you can export it to Excel using SheetJS
+            const table = document.querySelector('table');
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+            XLSX.writeFile(wb, 'vendor_list.xlsx');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debitnote</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+   
+    <style>
+        .table2 {
+            text-align: center;
+            padding-top: 6px;
+            font-size: 1.1em;
+            background-color: rgb(221, 247, 247);
+
+        }
+
+        .table-head {
+            color: rgb(52, 49, 58);
+        }
+
+        .table2 .tbody tr {
+            margin-bottom: 3px;
+        }
+
+        .table3 {
+            width: 75px;
+            text-align: right;
+            font-size: 14px;
+        }
+
+        body {
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <div class="my-5 page" size="A4">
+        <div class="p-5">
+            <div id="ember2512" class="row tooltip-container ember-view ribbon text-ellipsis"
+                style="display: flex; justify-content: space-between;">
+                <div class="ribbon-inner ribbon-open" style="
+                margin-right: 600px;
+                color: white;
+                text-align: center;
+                padding-top: 10px;">
+                </div>
+                <div class="col-md-4">
+                    <h3>
+                        <center class="text-black"><h3>DELIVERY CHALLAN</h3></center>
+                    </h3>
+                </div>
+                <div class="graphic-path" style="
+                  padding-top: 30px;
+                  
+                  text-align: center;
+                  color: rgb(0, 0, 0);
+                ">
+                    <p>Delivery Challan No. : <span style="font-weight: bold;">{{dc.chellan_no }}</span>
+                        <br>
+                        Challan Date : <span style="font-weight: bold;">{{dc.chellan_date|date:'d-m-Y' }}</span>
+                        <br>
+                        Challan Type : <span style="font-weight: bold;">{{dc.chellan_type }}</span>
+                        <br>
+                       
+                    </p>
+
+                </div>
+            </div>
+            <table class="table1 table-bordered" style="border-color: black;">
+                <tbody>
+                    <tr style="font-weight: bolder">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h5 class="text-info" style="font-weight: bold; color: rgb(49, 49, 138);">
+                                {{cmp.cmpany_name}}</h5>
+                            <p class="address" style="font-weight: bold;color: #000;">
+                                {{ cmp.address }} <br>
+                                {{cmp.city}},
+                                {{cmp.state}}
+                                {{cmp.pincode}} <br>
+                                {{ cmp.company_email }} <br>
+                                {{ cmp.contact_number }} 
+                            </p>
+                        </td>
+                        <td></td>
+                        <td>
+                            <h5 class="text-info" style="font-weight: bold;"><span style="color: #000;">Customer Name:
+                                </span>{{dc.cu.customerName}}</h5>
+                            <p class="address" style="font-weight: bold;color: #000;">
+                                <span>Address :</span>{{dc.cu.Address1}}
+                                <br>
+                                <span>Contact: </span>{{dc.cu.customerMobile}}
+                                <br>
+                                
+                           
+                            </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr />
+            <section class="product-area mt-4">
+                <table class="table2 table-hover table-primary">
+                    <thead>
+                        <tr>
+                            <td>ITEM</td>
+                            <td>HSN</td>
+                            <td>QUANTITY</td>
+                            <td>PRICE</td>
+                            <td>TAX</td>
+                            <td>DISCOUNT</td>
+                            <td>TOTAL</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      
+                        {% for itm in item %}
+                                                                    <tr>
+                                                                        <td class="text-center" style="color: black;">{{ itm.itemname}}</td>
+                                                                        <td class="text-center" style="color: black;">{{itm.hsn}}</td>
+                                                                        <td class="text-center" style="color: black;">{{ itm.qty }}</td>
+                                                                        <td class="text-center" style="color:black">{{ itm.rate  }}</td>
+                                                                        <td class="text-center" style="color: black;">{{ itm.tax_percentage  }}</td>
+                                                                        
+                                                                        <td class="text-center" style="color:black">{{ itm.discount  }}</td>
+                                                                        <td class="text-center" style="color:black">{{ itm.amount }}</td>
+                                                                    </tr>
+                                                                {% endfor %} 
+                    </tbody>
+                </table>
+            </section>
+            <hr />
+            <section class="balance-info" style="margin-top: 1rem;">
+                <div class="row my-5">
+                    <div class="col-md-8">
+                    </div>
+                    <div class="col-md-4">
+                        <table class="table3 border-0 table-hover mt-5">
+                            <tr >
+                                <th colspan="3">
+                                    <span style="float: right; margin-right: 10px">Sub Total :</span>
+                                </th>
+                                <td class="text-right" style="color: #000;">{{dc.sub_total}}</td>
+                            </tr>
+                            
+                            {% if dc.cu.placeofsupply == cmp.state %}
+                            <tr >
+                                <th colspan="3">
+                                    <span style="float: right; margin-right: 10px">IGST:</span>
+                                </th>
+                                <td class="text-right" style="color: #000;">{{dc.igst}}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <th colspan="3">
+                                    <span style="float: right; margin-right: 10px">CGST:</span>
+                                </th>
+                                <td class="text-right" style="color: #000;">{{dc.cgst}}</td>
+                                
+                            </tr>
+                            <tr>
+                                <th colspan="3">
+                                    <span style="float: right; margin-right: 10px">SGST:</span>
+                                </th>
+                                <td class="text-right" style="color: #000;">{{dc.sgst}}</td>
+                            </tr>
+                            {% endif %}
+                            <tr >
+                                <th colspan="3">
+                                    <span style="float: right; margin-right: 10px">Tax Amount:</span>
+                                </th>
+                                <td class="text-right" style="color: #000;">{{dc.tax_amount}}</td>
+                            </tr>
+
+                            {% if dc.adjustment != None and dc.adjustment != 0.0 %}
+                           
+                            <tr >
+                                <th colspan="3">
+                                    <span style="float: right; margin-right: 10px">Adjustment:</span>
+                                </th>
+
+                                <td class="text-right" style="color: #000;">{{dc.adjustment}}</td>
+                            </tr>
+                            {% endif %}
+                          
+                       
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">
+                                        <span style="float: right; margin-right: 14px">Grand Total:</span>
+                                    </th>
+                                    <td style="color: black; font-weight: bold">
+                                        {{dc.total}}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="row container-fluid  p-2 m-0" style="margin-top: 4rem;">
+                    <div class="col-md-6 col-sm-6 m-0 p-0"><label style="color: #000;"><b>Authorized
+                                Signature</b></label><span class="text-dark">_____________________</span></div>
+                    <!-- <div class="col-sm-4 m-0 p-0 text-dark">________________________</div> -->
+                    <div class="col-md-6 col-sm-6 m-0 p-0"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+
+</html>

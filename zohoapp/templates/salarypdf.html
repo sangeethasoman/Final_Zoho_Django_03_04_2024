@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Slip</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <style>
+      .table2 {
+          text-align: center;
+          padding-top: 6px;
+          font-size: 1.1em;
+          background-color: rgb(221, 247, 247);
+
+      }
+
+      .table-head {
+          color: rgb(52, 49, 58);
+      }
+
+      .table2 .tbody tr {
+          margin-bottom: 3px;
+      }
+
+      .table3 {
+          width: 75px;
+          text-align: right;
+          font-size: 14px;
+      }
+
+      body {
+          font-size: 14px;
+      }
+  </style>
+</head>
+<body>
+  <div class="my-5 page" size="A4">
+    <div class="p-5">
+        <div id="ember2512" class="row tooltip-container ember-view ribbon text-ellipsis"
+            style="display: flex; justify-content: space-between;">
+            <div class="col-md-4 ribbon-inner ribbon-open" style="
+            margin-right: 600px;
+            color: white;
+            text-align: center;
+            padding-top: 10px;
+          ">
+            </div>
+            <div class="col-md-4">
+                <h3>
+                    <center class="text-black"><b>Pay Slip</b></center>
+                </h3>
+            </div>
+            <div class="mt-3 template2 whatToPrint2" style="height: auto;width: 100%; margin-left: -1vh">
+
+              <section id="selected-area" style="background-color: rgb(255, 255, 255);height: auto;" class=" p-2 m-2">
+
+                <div class="invoice-box">
+                  
+                    <div  class="company-info" style="text-align: center;">
+                      <h5 class="text-dark">{{company.company_name}}</h5>
+                      <p class="text-dark"> {{company.address}},{{company.city}}</p>
+                      <p  class="text-dark"> {{company.contact_number}} ,{{company.company_email}}</p>
+                    
+
+                    </div>
+                  
+                  <div class="invoice-header">
+                    <div class="invoice-details text-dark">
+                      <table>
+                        <tr>
+                          <td class="table-cell text-black" style="border: none;">Employee name</td>
+                          <td class="table-cell text-black" style="border: none;">:</td>
+                          <td class="table-cell text-black" style="border: none;">{{sale.employee_name.first_name}}{{sale.employee_name.last_name}}</td>
+                        </tr>
+                        <tr>
+                          <td class="table-cell text-black" style="border: none;">Employee ID</td>
+                          <td class="table-cell text-black" style="border: none;">:</td>
+                          <td class="table-cell text-black" style="border: none;">{{sale.employee_id}}</td>
+                        </tr>
+                        <tr>
+                          <td class="table-cell text-black" style="border: none;">Desigination</td>
+                          <td class="table-cell text-black" style="border: none;">:</td>
+                          <td class="table-cell text-black" style="border: none;">{{sale.Desigination}}</td>
+                        </tr>
+                        <tr>
+                          <td class="table-cell text-black" style="border: none;">Date of joining</td>
+                          <td class="table-cell text-black" style="border: none;">:</td>
+                          <td class="table-cell text-black" style="border: none;">{{sale.employee_joindate}}</td>
+                        </tr>
+      
+                      </table>
+                    
+                    </div>
+                    <div class="invoice-details" style="width: 50vh;">
+                      <table>
+                          <tr>
+                            <td class="table-cell text-black" style="border: none;">Month</td>
+                            <td class="table-cell text-black" style="border: none;">:</td>
+                            <td class="table-cell text-black" style="border: none;">{{sale.employee_month}}</td>
+                          </tr>
+                          <tr>
+                            <td class="table-cell text-black" style="border: none;">leave taken </td>
+                            <td class="table-cell text-black" style="border: none;">:</td>
+                            <td class="table-cell text-black" style="border: none;">{{sale.employee_leave}}</td>
+                          </tr>
+                          <tr>
+                            <td class="table-cell text-black" style="border: none;">company location</td>
+                            <td class="table-cell text-black" style="border: none;">:</td>
+                            <td class="table-cell text-black" style="border: none;">{{sale.employee_name.location}}</td>
+                          </tr>
+                          <tr>
+                            <td class="table-cell text-black" style="border: none;">working days</td>
+                            <td class="table-cell text-black" style="border: none;">:</td>
+                            <td class="table-cell text-black" style="border: none;">{{sale.employee_workingday}}</td>
+                          </tr>
+                      </table>
+                    </div>
+                  </div>
+
+                  <table border="1" style="width:100%; color: #000000; border-collapse: collapse; margin: 0 auto;">
+                    <tr>
+                        <th>Particulars</th>
+                        <th>Gross Amount (Rs)</th>
+                        <th>Deduction Amount (Rs)</th>
+                        <th>Amount (Rs)</th>
+                    </tr>
+                    <tr>
+                      <td style="height: 100px; border-bottom: 0;">Basic Salary</td>
+                      <td style="height: 100px;" id="basalary">{{bvalue}}</td>
+                      <td style="height: 100px; border-bottom: 0;">Other Cuttings</td>
+                      <td style="height: 100px;">{{ sale.employee_othercuttings }}</td>
+                  </tr>
+                  <tr>
+                      <td style="height: 100px; border-bottom: 0;">Conveyance Allowance</td>
+                      <td style="height: 100px;" id="salaryall">{{Allvalue}}</td>
+                      <td style="height: 100px; border-bottom: 0;"></td>
+                      <td style="height: 100px;"></td>
+                  </tr>
+                  <tr>
+                      <td style="height: 100px; border-bottom: 0;">HRA</td>
+                      <td style="height: 100px;" id="salaryhra">{{hravalue}}</td>
+                      <td style="height: 100px; border-bottom: 0;"></td>
+                      <td style="height: 100px;"></td>
+                  </tr>
+                  <tr>
+                      <td style="height: 100px; border-bottom: 0;">Other Allowance</td>
+                      <td style="height: 100px;" id="salaryallo">{{oAllvalue}}</td>
+                      <td style="height: 100px; border-bottom: 0;"></td>
+                      <td style="height: 100px;"></td>
+                  </tr>
+                    <tr>
+                      <td style="height: 50px;">Bonus</td>
+                      <td style="height: 50px;">{{sale.employee_Bonus}}</td>
+                      <td style="height: 50px;">Total Deduction</td>
+                      <td style="height: 50px;">{{sale.employee_othercuttings}}</td>
+                  </tr>
+                  <td style="height: 50px;">Netsalary (rounded value)</td>
+                    <td style="height: 50px;"></td>
+                    
+                    <td style="color: #090909; text-align: right;">
+                      {{ sale.employee_Tsalary|floatformat:0 }}
+                      <p style="color: #090909; text-align: right;" id="salaryCell">
+                        {{ sale.employee_Tsalary|floatformat:0 }}
+                      </p>
+                  </td>
+
+                </table> 
+
+                </div>
+
+                <footer class="mb-5">
+                  <p class="text-dark">&copy; Zho Books 2023 | Info park kakkanad kochi, Ernamkulam, kerala India 12345
+                    | Phone: (123) 456-7890 | Email: info@zohodjango.com</p>
+                </footer>
+              </section>
+            </div>
+          </div>
+
+  
+    </div>
+</div>
+</body>
+
+    <!-- jQuery should be loaded only once -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <!-- Your custom scripts here -->
+    <script src="https://code.jquery.com/jquery-3.x.x.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          console.log('hi')
+      const salary = parseFloat(document.getElementById("salary").value);
+      const bsalary = parseFloat(document.getElementById("bsalary").value);
+      const hra = parseFloat(document.getElementById("hra").value);
+      const Allowance = parseFloat(document.getElementById("Allowance").value);
+      const otherall = parseFloat(document.getElementById("otherall").value);
+      console.log(hra)
+      console.log(bsalary)
+      console.log(salary)
+      console.log(Allowance)
+      console.log(otherall)
+
+      const hraMultiplier = hra / 100;
+      const hravalue = salary * hraMultiplier;
+      document.getElementById("salaryhra").textContent = hravalue.toFixed(2);
+
+      const Allowancemul = Allowance / 100;
+      const Allvalue = salary * Allowancemul;
+      document.getElementById("salaryall").textContent = Allvalue.toFixed(2);
+
+      const oAllowancemul = otherall / 100;
+      const oAllvalue = salary * oAllowancemul;
+      document.getElementById("salaryallo").textContent = oAllvalue.toFixed(2);
+
+      const basicmul = bsalary / 100;
+      const bvalue = salary * basicmul;
+      document.getElementById("basalary").textContent = bvalue.toFixed(2);
+
+
+
+  });
+  function numberToWords(number) {
+            // Array of words for numbers
+            const words = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+      const teens = ["", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+      const tens = ["", "Ten", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+      if (number === 0) {
+          return "Zero";
+      }
+
+      function convertLessThanOneThousand(num) {
+        if (num < 10) {
+      return words[num];
+        } 
+        else if (num < 20) {
+            return teens[num - 10];
+        } 
+        else if (num < 100) {
+            return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? " " + words[num % 10] : "");
+        } 
+        else if (num < 1000) {
+            return words[Math.floor(num / 100)] + " Hundred" + (num % 100 !== 0 ? " " + convertLessThanOneThousand(num % 100) : "");
+        } 
+        else if (num < 10000) {
+            return words[Math.floor(num / 1000)] + " Thousand" + (num % 1000 !== 0 ? " " + convertLessThanOneThousand(num % 1000) : "");
+        } 
+        else if (num < 20000) {
+            return "Ten Thousand " + convertLessThanOneThousand(num % 10000);
+        } 
+        else if (num < 100000) {
+            return words[Math.floor(num / 10000)] + " Thousand" + (num % 10000 !== 0 ? " " + convertLessThanOneThousand(num % 10000) : "");
+        } 
+        else if (num < 1000000) {
+            return words[Math.floor(num / 100000)] + " Lakh" + (num % 100000 !== 0 ? " " + convertLessThanOneThousand(num % 100000) : "");
+        } 
+        else {
+            return "Number out of range";
+        }
+
+      }
+
+      let result = "";
+
+      if (number < 0) {
+          result += "Negative ";
+          number = Math.abs(number);
+      }
+      if (number == 10000) {
+          result += convertLessThanOneThousand(Math.floor(number / 1000)) + " TenThousand ";
+          number %= 1000;
+        }
+
+
+      if (number <= 1000000) {
+          result += convertLessThanOneThousand(Math.floor(number / 1000)) + " Thousand ";
+          number %= 1000;
+      }
+
+      result += convertLessThanOneThousand(number);
+
+      return result.trim();
+
+     
+      
+  }
+
+
+  // Ensure that this script comes after the "salaryCell" element in the HTML
+  window.onload = function () {
+      const cellValue = document.getElementById("salaryCell").textContent;
+      const numericValue = parseFloat(cellValue);
+      const words = numberToWords(numericValue);
+      document.getElementById("salaryCell").textContent = words;
+  };
+
+
+    </script>
+
+</html>

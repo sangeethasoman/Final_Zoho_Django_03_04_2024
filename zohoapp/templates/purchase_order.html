@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<style>
+  .modal{
+      z-index: 9999;
+      overflow: scroll;
+    }
+
+  #over:hover {
+    background-color: rgba(110, 110, 110, 0.616);
+  }
+
+  .dropdown-item:hover {
+    color: chocolate;
+  }
+
+  #myTable tbody {
+    cursor: pointer;
+  }
+
+  .table-btn:hover {
+    color: black;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: rgb(252, 236, 217);
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="fixed-top" style="top: 7rem; margin-left: 18rem;">
+    <div style="height: 600px;overflow-y: scroll;">
+
+      <div class="row container-fluid">
+        {% if messages %}
+        <div class="alert bg-danger alert-dismissible fade show" role="alert" style="z-index: 9999;">
+            {% for message in messages %}
+            {{ message }}
+            {% endfor %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        <div class="col-md-3"><a class="text-white" style="font-size: 2rem;">All Purchases</a></div>
+      </div>
+      <br><br><br>
+
+      <div class="row container-fluid mb-3">
+        <div class="col-md-3">
+        </div>
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-4"></div>
+        <div class="col-md-3">
+          <div class="dropdown d-flex">
+            <a class="btn btn-outline-warning p-2 mr-2" id="importBtn" data-toggle="modal" data-target="#import_modal"><i class="fa fa-file-excel-o" aria-hidden="true"></i>Import</a>&nbsp;
+            <a class="btn btn-outline-warning p-2 mr-2" onclick="exportAsXLS()"><i class="fa fa-file-excel-o" aria-hidden="true"></i>EXCEL</a>&nbsp;
+          </div>
+        </div>
+      </div>
+      <div class="row container-fluid mb-3">
+        <div class="col-md-3">
+          <input type="text" id="search" class="form-control bg-light text-dark" placeholder="Search.."
+            autocomplete="off">
+        </div>
+        <div class="col-md-2">
+          <div class="dropdown">
+            <a class="btn text-center px-4 pt-2 btn-outline-warning" id="sortbutton" data-bs-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false" role="button">
+              <i class="fas fa-sort m-1"></i>
+            </a>
+            <div class="dropdown-menu m-1">
+              <a class="dropdown-item" href="{% url 'purchaseView' %}">All</a>
+              <a class="dropdown-item" onclick="sortTableName()">Vendor Name</a>
+              <a class="dropdown-item" href="{% url 'purchaseView_by_ord_no' %}">Purchase Order Number</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4"></div>
+        <div class="col-md-3">
+          <div class="dropdown d-flex">
+            <a class="btn text-center px-4 pt-2 btn-outline-warning" data-bs-toggle="dropdown" aria-haspopup="true"
+              aria-expanded="false" role="button">
+              <i class="fa fa-filter mt-1"></i>
+            </a>
+            <div class="dropdown-menu m-1">
+              <a class="dropdown-item" href="{% url 'purchaseView' %}">All</a>
+              <a class="dropdown-item" href="{% url 'drf' %}">Draft</a>
+              <a class="dropdown-item" href="{% url 'apr' %}">Save</a>
+            </div>
+            <a style="height: 5vh; margin-left: 2vh;" class="btn btn-outline-warning text-right px-3 py-2" role="button"
+              style="margin-left: 5px;" href="{% url 'purchase_order' %}">
+              <i class="fa fa-plus" style="font-size: large;"></i><span style="font-size: 3vh;">New</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div style="width: 100%; overflow-x: auto;">
+          <table class="table text-white" id="myTable">
+            <thead>
+              <tr>
+                <th style="text-align: center;">DATE</th>
+                            <th style="text-align: center;">PURCHASE ORDER NUMBER</th>
+                            <th style="text-align: center;">VENDOR NAME</th>
+                            <th style="text-align: center;">MAIL ID</th>
+                            <th style="text-align: center;">TOTAL AMOUNT</th>
+                            <th style="text-align: center;">BALANCE</th>
+                            <th style="text-align: center;">STATUS (Draft/Save)</th>
+                            <th style="text-align: center;">ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for v in pt %}
+              <tr id="over" class='clickable-row'>
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">{{v.Ord_date}}</td>
+                <!-- <td style="text-align: center;" onclick="location.href ='' " > {{v.Name}}</td> -->
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">{{v.Pur_no}}</td>
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">{{v.vendor_name}}
+                </td>
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">{{v.vendor_mail}}</td>
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">{{v.grand_total}}</td>
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">{{v.balance_amount}}</td>
+                {% if v.status == "Draft" %}
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">{{v.status}}</td>
+                {% else %}
+                <td style="text-align: center;" data-href="{% url 'purchase_bill_view' v.id %}">Saved</td>
+                {% endif %}
+                {% if v.typ == "Customer" %}
+                {% if v.complete_status == 0 %}
+                <td style="text-align: center;" data-href="#">
+                  <div class="dropdown ">
+                    <a class="dropdown-toggle btn btn-outline-warning" href="" data-toggle="dropdown">
+                      CONVERT
+                    </a>
+                    <div class="dropdown-menu m-1">
+                      <a class="dropdown-item" href="{% url 'convert_to_invoice_purchase' v.id %}">Convert to Bill</a>
+                      <a class="dropdown-item" href="{% url 'convert_to_recinvoice_frm_purchaseorder' v.id %}">Convert to Reccurring Bill</a>
+                    </div>
+                </td>
+                {% elif v.complete_status == 1 %}
+                <td style="text-align: center;" class="text-success m-2" data-href="#">Converted to Bill</td>
+                {% else %}
+                <td style="text-align: center;" class="text-success m-2" data-href="#">Converted to Reccuring Bill</td>
+                {% endif %}
+                {% else %}
+                <td style="text-align: center;" class="text-success m-2" data-href="#"></td>
+                {% endif %}
+                <td style="text-align: center;">
+                  <a style="border-radius: 50%;"  href="{% url 'purchase_delet' v.id %}"><i class="fa fa-trash-o" style="font-size:24px"></i>
+                  </a>
+              </td>
+
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <br><br><br><br><br>
+      </div>
+      <div class="col-sm-12 col-md-1 col-lg-1"></div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="import_modal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="background: rgb(32, 35, 37);border-radius: 20px;">
+      <div class="modal-header " style="background: rgb(32, 35, 37);">
+        <h1 class="text-light">Import Purchase Order</h1>
+      </div>
+      <div class="modal-body" style="background: rgb(32, 35, 37);">
+        <div class="card p-3 m-3">        
+          <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+              <h5 class="text-danger">IMPORTANT:</h5>
+              <p class="text-light">Place of supply should be in the following format ,eg: for kerala  Type [KL]-Kerala  </p><br>
+              <div class="row">
+                  <div class="col-md-4">
+                      [AN] Andaman and Nicobar Islads<br>
+                      [AD] Andhra Predhesh <br>
+                      [AR] Arunachal Predesh <br>
+                      [AS] Assam<br>
+                      [BR] Bihar<br>
+                      [CH] Chandigarh<br>
+                      [CG] Chhattisgarh<br>
+                      [DNH] Dadra and Nagar Haveli<br>
+                      [DD] Damn anad Diu<br>
+                      [DL] Delhi<br>
+                      [GA] Goa<br>
+                      [GJ] Gujarat<br>
+                      [HR] Haryana<br>
+
+                  </div>
+                  <div class="col-md-4">
+                      [HP] Himachal Predesh<br>
+                      [JK] Jammu and Kashmir<br>
+                      [JH] Jharkhand<br>
+                      [KA] Karnataka<br>
+                      [KL] Kerala<br>
+                      [LA] Ladakh<br>
+                      [LD] Lakshadweep<br>
+                      [MP] Madhya Predesh<br>
+                      [MH] Maharashtra<br>
+                      [MN] Manipur<br>
+                      [ML] Meghalaya<br>
+                      [MZ] Mizoram<br>
+                      
+                  </div>
+                  <div class="col-md-4">
+                      [NL] Nagaland<br>
+                      [OD] Odisha<br>
+                      [PY] Puducherry<br>
+                      [PB] Punjab<br>
+                      [RJ] Rajasthan<br>
+                      [SK] Sikkim<br>
+                      [TN] Tamil Nadu<br>
+                      [TS] Telangana<br>
+                      [TR] Tripura<br>
+                      [UP] Uttar Predesh<br>
+                      [UK] Uttarakhand<br>
+                      [WB] West Bengal<br>
+                      [OT] Other Territory<br>
+                  </div>
+              </div><br><br>
+              <p class="text-danger">NOTE: Vendor, customer and items should be saved in database before importing. The names in the file must be in prescribed format.<br>
+                  eg: Mr. Adithya Chopra<br>
+                  If the place of supply and the company state is same, tax will be calculated as GST else it will be IGST.
+              </p>
+            </div>
+          </div>
+        </div>
+        <a href="{% url 'downloadPurchaseSampleImportFile' %}" class="text-primary" style="font-size:medium;">Download File to Edit</a><br><br>
+
+        <form action="{% url 'import_purchase' %}" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="file" name="excel_file" class="form-control text-dark" style="width: 50%;"><br>
+          <button class="btn btn-outline-warning mt-3">IMPORT</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Function to sort the table by the selected column
+  function sortTableName() {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.getElementById("myTable");
+    switching = true;
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+      for (i = 1; i < rows.length - 1; i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("td")[2];
+        y = rows[i + 1].getElementsByTagName("td")[2];
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+  }
+
+  function sortTableTotal() {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.getElementById("myTable");
+    switching = true;
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+      for (i = 1; i < rows.length - 1; i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("td")[1];
+        y = rows[i + 1].getElementsByTagName("td")[1];
+        if (x.innerHTML > y.innerHTML) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+  }
+</script>
+
+<script>
+  jQuery(document).ready(function ($) {
+    $(".clickable-row td").click(function () {
+      window.location = $(this).data("href");
+    });
+  });
+</script>
+
+
+<script>
+  var $rows = $('table tbody tr');
+  $('#search').keyup(function () {
+    var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+    $rows.hide().filter(function () {
+      var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+      return ~text.indexOf(val);
+    }).show();
+  });
+  function exportAsXLS() {
+            // Assuming you have data in a table format, you can export it to Excel using SheetJS
+            const table = document.querySelector('table');
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+            XLSX.writeFile(wb, 'purchase_order.xlsx');
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+  integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous">
+  </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+  integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous">
+  </script>
+{% endblock %}

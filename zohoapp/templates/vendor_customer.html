@@ -1,0 +1,627 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<style>
+
+  
+  .col {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+  }
+  
+  @media print {
+    table, th, td, tr {
+      border: 1px solid black;
+      padding: 10px; /* Ensure black borders when printing */
+     
+    }
+    table {
+    margin: 0 auto; /* Center the table horizontally */
+  }
+
+  }
+  @media (max-width: 768px) {
+  
+      #d1,
+      #d2,
+      #search-box {
+          width: 30%;
+      }
+
+
+  }
+
+  .daterangepicker {
+      background-color: #f0f0f0;
+      color: #000;
+  }
+
+  .pdf-export .text,
+  .pdf-export table th,
+  .pdf-export table td {
+    color: black !important;
+}
+ 
+</style>
+
+
+
+<div class="d-flex justify-content-between align-items-center" style="margin-top: 40px;">
+  <div class="d-flex">
+      <div class="col">
+          {% comment %} <form action="" id="date-form" method="post"> {% endcomment %}
+              From <input type="date" id="d1" name="d1" required>
+              To <input type="date" id="d2" name="d2" required>
+              <input type="submit" id="submitButton" name="submitButton" onclick="submitDate()">
+              <span id="date-error" style="color: red;"></span>
+          {% comment %} </form> {% endcomment %}
+      </div>
+  </div>
+  
+  <div class="d-flex">
+     
+      <!-- <button class="btn btn-light mr-2" id="print" onclick="printPageContent()">   <i class="fa fa-print"></i> Print</button>&nbsp; -->  
+      <button class="btn btn-light mr-2" id="print" onclick="printPageContent()">   <i class="fa fa-print"></i> Print</button>&nbsp;
+      <button class="btn btn-light mr-2" id="pdf" onclick="exportAsPDF()"><i class="fa fa-file-pdf-o"></i>PDF</button>
+    
+      <div style="width: 3px;"></div>
+      <div class="dropdown">
+          <button class="btn btn-light mr-3 dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+              Export
+          </button>
+          <div class="dropdown-menu" aria-labelledby="exportDropdown">
+           
+              <a class="dropdown-item" href="#" onclick="exportToExcel()">XLS (Excel)</a>
+          </div>
+          <a href="{% url 'report_inventory_view' %}" class="btn btn-light" style=" color: rgb(1, 1, 1);">
+              <i class="fa fa-times-circle"></i>
+          </a>
+      </div>
+      
+  </div>
+  
+</div>
+<div  style="top: 7rem; " > 
+  <div class="mt-1">
+      <datalist id="customers" >
+        
+        {% for v in vend %}
+          <option value="{{ v.first_name }} {{ v.last_name }}">
+        {% endfor %}
+
+      
+      </datalist>
+  </div>
+  <label>Vendor Name :</label>
+  <input type="text" id="search" name="search" placeholder="Search.." autocomplete="off" list="customers" >
+  <input type="submit" id="submitButton" name="submitButton" onclick="submitName()">
+  <p id="result" hidden>'{{company.company_name}}'</p>
+<script>
+var searchInput = document.getElementById("search");
+searchInput.addEventListener("input", function () {
+    var searchValue = searchInput.value;
+   if (searchValue.trim() !== "") {
+         document.getElementById("result").innerHTML =  searchValue;
+         document.getElementById("selected_customer_heading").innerHTML =  searchValue+' Balances';
+    } else {
+        document.getElementById("result").innerHTML =  '{{company.company_name}}';
+        document.getElementById("selected_customer_heading").innerHTML =  'Vendor Balances';
+    }
+});
+</script>
+<div class="container-fluid" id="container-to-print"> 
+  <div class="row pt-5">
+    <center>
+      <div class="row">
+        {% if company.company_name != None %}
+         <div  ><h2 class="text-white" >
+              {{company.company_name }}
+              {% else %}
+              Add Company</h2>
+              </div>
+              {% endif %}
+              <div>
+                  <a class="text-white" id="selected_customer_heading"><h2>Vendor Balances</h2></a>
+              </div>
+              <p class="text-white" id="date-range-display">From <span id="start_date"></span> To <span id="end_date"></span></p>
+          </div>
+      </div>      
+  </center>
+      <div class="table-responsive"> 
+      <table class="table table-bordered table-striped mt-4" id="data-table">
+        <thead class="text-center">
+          <tr>
+              <th class="text" style="color:white">Name</th>
+              <th class="text" style="color:white">Email</th>
+              <th class="text" style="color:white">Sub Total</th>
+              <th class="text" style="color:white">Bill Total</th>
+              <th class="text" style="color:white">Current Balance</th>
+          </tr>
+      </thead>
+      <!-- Inside the <tbody id="dataTableBody"> ... </tbody> -->
+<tbody id="dataTableBody">
+  {% for i in purchasebill %}
+      <tr>
+          <td class="text text-white vendor_name">{{ i.vendor_name }}</td>
+          <td class="text text-white vendor_email">{{ i.vendor_email}}</td>
+          <td class="text text-white sub_total">{{ i.sub_total }}</td>
+          <td class="text text-white total">{{ i.total }}</td>
+          <td class="text text-white balance">
+              {% for balance in current_balances %}
+                  {% if balance.vendor_id == i.vendor_id %}
+                      {{ balance.current_balance|default:"N/A"|floatformat }}
+                  {% endif %}
+              {% endfor %}
+          </td>
+          
+      </tr>
+  {% endfor %}
+  {% for j in recurringbill %}
+      <tr>
+          <td class="text text-white vendor_name">{{ j.vendor_name }}</td>
+          <td class="text text-white vendor_email">{{ j.vendor_email }}</td>
+          <td class="text text-white sub_total">{{ j.sub_total }}</td>
+          <td class="text text-white total">{{ j.grand_total }}</td>
+          <td class="text text-white balance">
+              {% for balance in current_balances %}
+                  {% if balance.vendor_id == j.vendor_id %}
+                      {{ balance.current_balance|default:"N/A"|floatformat }}
+                  {% endif %}
+              {% endfor %}
+          </td>
+          
+      </tr>
+  {% endfor %}
+  {% for k in vendorcredits %}
+      <tr>
+          <td class="text text-white vendor_name">{{ k.vendor_name }}</td>
+          <td class="text text-white vendor_email">{{ k.vendor_email}}</td>
+          <td class="text text-white sub_total">{{ k.sub_total }}</td>
+          <td class="text text-white total">{{ k.grand_total }}</td>
+          <td class="text text-white balance">
+              {% for balance in current_balances %}
+                  {% if balance.vendor_id == k.vendor_id %}
+                      {{ balance.current_balance|default:"N/A"|floatformat }}
+                  {% endif %}
+              {% endfor %}
+          </td>
+         
+      </tr>
+  {% endfor %}
+</tbody>
+
+
+      </table> 
+      <div id="total-bill-amount" class="mt-3" class="text text-white" style="margin-left:55vw;"></div>
+      <div>
+        <div>Purchase bill: <span id="type1">{{purchasebillcount}}</span></div>
+        <div>Recurring Bill: <span id="type2">{{recurringbillcount}}</span></div>
+        <div>Vendor Credits Bill: <span id="type3">{{vendorcreditscount}}</span></div>
+        
+      </div>
+      
+      <script>
+      
+
+        function combineRows() {            
+          const rows = document.querySelectorAll('#data-table tbody tr');
+            const userMap = {};
+           
+            
+            rows.forEach(row => {
+                const username = row.querySelector('td:nth-child(1)').textContent;
+                const email = row.querySelector('td:nth-child(2)').textContent;
+                const sub_total = parseFloat(row.querySelector('.sub_total').textContent);
+                const total = parseFloat(row.querySelector('.total').textContent);
+                const bal = parseFloat(row.querySelector('.balance').textContent);
+
+                if (userMap[username]) {
+                    userMap[username].sub_total += sub_total;
+                    userMap[username].total += total;
+                    userMap[username].email = email;
+                    userMap[username].bal = bal;
+                } else {
+                    userMap[username] = { sub_total, total, email, bal};
+                }
+                
+            });
+            console.log(userMap,'sdf')
+            const tbody = document.querySelector('#data-table tbody');
+            tbody.innerHTML = '';
+
+            Object.keys(userMap).forEach(username => {
+                const userData = userMap[username];
+                const newRow = document.createElement('tr');
+                newRow.classList.add('table-tr')
+                newRow.innerHTML = `
+                <td class="text text-white vendor_name">${username}</td>
+                <td class="text text-white vendor_email">${userData.email}</td>
+                <td class="text text-white sub_total">${userData.sub_total}</td>
+                <td class="text text-white total">${userData.total}</td>
+                <td class="text text-white balance">${userData.bal}</td>
+            `;
+                tbody.appendChild(newRow);
+            });
+        }
+      
+         document.addEventListener('DOMContentLoaded',function(){
+          combineRows();
+        })
+      </script>
+      <div id="total-bill-amount" class="mt-3" class="text text-white" style="margin-left:55vw;"></div>
+      <div>
+          <div id="noDataMessage" style="display: none;" >No data found for selected dates.</div>	
+          <br><br><br><br><br>
+      </div>
+  </div>
+</div>
+</div>
+<div class="printable-content mt-3">
+  
+</div>
+<script>
+  const searchInput = document.getElementById("search");
+  const partyNameDisplay = document.getElementById("party_name");
+  
+  searchInput.addEventListener("input", handleInputChange);
+  
+ 
+  // Add event listener to the input field for the "input" event
+  searchInput.addEventListener("input", handleInput);
+  
+  // Function to handle input changes
+  function handleInput() {
+      const checkbox = document.getElementById('myCheckbox');
+      const startDateInput = document.getElementById('startDate');
+      const endDateInput = document.getElementById('endDate');
+      // Add an event listener to the checkbox to toggle the date input
+      checkbox.addEventListener('change', function() {
+          if (checkbox.checked) {
+              startDateInput.style.display = 'flex';
+              endDateInput.style.display = 'flex'; // Show the date input
+          } else {
+              startDateInput.style.display = 'none';
+              endDateInput.style.display = 'none' // Hide the date input
+          }
+      });
+  }
+  
+</script>
+<script>
+    function calculateTotalBillAmount() {
+      const visibleRows = Array.from(dataTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr'))
+          .filter(row => row.style.display !== 'none');
+    
+      let totalBillAmount = 0;
+    
+      visibleRows.forEach(row => {
+          const billAmountCell = row.querySelector('td:nth-child(4)');
+          const billAmount = parseFloat(billAmountCell.textContent);
+          if (!isNaN(billAmount)) {
+              totalBillAmount += billAmount;
+          }
+      });
+    
+      const totalBillAmountElement = document.getElementById('total-bill-amount');
+      totalBillAmountElement.textContent = `Total Bill Amount: ${totalBillAmount.toFixed(2)}`;
+    }
+</script>
+<script>
+
+  function exportAsPDF() {
+    const container = document.getElementById('container-to-print');
+  
+    // Add a class for PDF styling
+    container.classList.add('pdf-export');
+  
+    const pdfOptions = {
+      margin: 0,
+      filename: '{{company.company_name}} Vendor Balances.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+    };
+  
+    // Generate PDF from the container
+    html2pdf().from(container).set(pdfOptions).save().then(() => {
+      // Remove the PDF styling class
+      container.classList.remove('pdf-export');
+      location.reload();
+    });
+  }
+  
+  
+
+ // Function to save Excel using XLSX
+ function exportToExcel() {
+     var table = document.querySelector('table');
+     var ws = XLSX.utils.table_to_sheet(table);
+     var wb = XLSX.utils.book_new();
+     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+     XLSX.writeFile(wb, 'report.xlsx');
+ }
+
+ // Function to handle export based on dropdown selection
+ document.getElementById('exportDropdown').addEventListener('change', function () {
+     var selectedValue = this.value;
+     if (selectedValue === 'pdf') {
+         exportToPDF();
+     } else if (selectedValue === 'xls') {
+         exportToExcel();
+     }
+ });
+ const pdfExportLink = document.getElementById('pdf'); 
+pdfExportLink.addEventListener('click', function (event) {
+ event.preventDefault(); 
+ exportToPDF();
+});
+
+//-------PRINT
+
+function printPageContent() {
+  const contentToPrint = document.getElementById('container-to-print');
+  const clonedContent = contentToPrint.cloneNode(true);
+
+  const textElements = clonedContent.querySelectorAll('.text');
+  const filterDropdowns = clonedContent.querySelectorAll('.filter-dropdown');
+
+  textElements.forEach(element => {
+    element.style.color = '#000000'; // Text color (black)
+  });
+
+  filterDropdowns.forEach(dropdown => {
+    dropdown.style.display = 'none';
+  });
+
+  const tableElements = clonedContent.querySelectorAll('table');
+  tableElements.forEach(table => {
+    const tableHeaders = table.querySelectorAll('th');
+    tableHeaders.forEach(th => {
+      th.style.color = '#000000';
+    
+    });
+   
+
+    const tableCells = table.querySelectorAll('td, th, tr');
+    tableCells.forEach(cell => {
+      cell.style.border = '1px solid black';
+      cell.style.padding = '10px';
+      cell.style.color = '#000000';
+      
+    });
+    table.style.margin = '0 auto';
+  });
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.body.appendChild(clonedContent);
+  printWindow.print();
+  printWindow.close();
+}
+
+
+//date
+
+const d1 = document.getElementById('d1');
+const d2 = document.getElementById('d2');
+const dateError = document.getElementById('date-error');
+const dataTable = document.getElementById('data-table');
+const dateRangeDisplay = document.getElementById('date-range-display');
+
+d1.addEventListener('input', filterData);
+d2.addEventListener('input', filterData);
+
+function filterData() {
+  const fromDate = new Date(d1.value);
+  const toDate = new Date(d2.value);
+
+  if (isNaN(toDate)) {
+      dateError.textContent = '';
+  } else if (fromDate > toDate) {
+      dateError.textContent = 'Invalid date range';
+  } else {
+      dateError.textContent = '';
+      const rows = dataTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+      for (let i = 0; i < rows.length; i++) {
+          const rowDateText = rows[i].getElementsByTagName('td')[0].textContent;
+          const rowDate = new Date(rowDateText);
+
+          if (!isNaN(rowDate)) {
+              // Compare dates without considering the time component
+              const rowDateWithoutTime = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate());
+              const fromDateWithoutTime = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+              const toDateWithoutTime = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+
+              if (rowDateWithoutTime >= fromDateWithoutTime && rowDateWithoutTime <= toDateWithoutTime) {
+                  rows[i].style.display = '';
+              } else {
+                  rows[i].style.display = 'none';
+              }
+    dateRangeDisplay.textContent = ` from ${d1.value} to ${d2.value}`;
+    combineRows();
+    calculateTotalBillAmount();
+  }
+}
+
+//------------
+function calculateTotalBillAmount() {
+  const visibleRows = Array.from(dataTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr'))
+      .filter(row => row.style.display !== 'none');
+
+  let totalBillAmount = 0;
+
+  visibleRows.forEach(row => {
+      const billAmountCell = row.querySelector('td:nth-child(4)');
+      const billAmount = parseFloat(billAmountCell.textContent);
+      if (!isNaN(billAmount)) {
+          totalBillAmount += billAmount;
+      }
+  });
+
+  const totalBillAmountElement = document.getElementById('total-bill-amount');
+  totalBillAmountElement.textContent = `Total Bill Amount: ${totalBillAmount.toFixed(1)}`;
+}
+ }
+      }
+      document.addEventListener("DOMContentLoaded", function() {
+        calculateTotalBillAmount();
+    });   
+    
+   
+
+   // $(document).ready(function(){
+    function submitDate() {
+      var d1 = $("#d1").val();
+      var d2 = $("#d2").val();
+    
+      $.ajax({
+        url: "/datesel",
+        type: "POST",
+        data: { 'd1': d1, 'd2': d2 },
+        success: function(response) {
+          displayDataInTable(response); // Invoke displayDataInTable with response data
+        },
+        error: function(error) {
+          console.log(error);
+        }
+      });
+    };
+//////////////////////////////////////    
+function submitName() {
+  var search = $("#search").val();
+  console.log(search,"name")
+
+  $.ajax({
+      url: "/namesel",
+      type: "POST",
+      data: { 'search': search},
+      success: function(response) {
+          displayDataInTable(response); // Invoke displayDataInTable with response data
+      },
+      error: function(error) {
+          console.log(error);
+      }
+  });
+}
+//////////////////////////////////////
+
+
+function displayDataInTable(data) {
+  if (!data || !data.options || !Array.isArray(data.options)) {
+      console.error('Invalid or missing data from server:', data);
+      return;
+  }
+
+  const tbody = document.getElementById('dataTableBody');
+  tbody.innerHTML = ''; // Clear existing rows
+
+  console.log('Received data from server:', data);
+
+  let purchaseBillCount = 0;
+  let recurringBillCount = 0;
+  let vendorCreditBillCount = 0;
+
+  data.options.forEach(option => {
+      const rowHTML = `
+          <tr>
+              <td class="text text-white vendor_name">${option.vendor_name}</td>
+              <td class="text text-white vendor_email">${option.email}</td>
+              <td class="text text-white sub_total">${option.sub_total}</td>
+              <td class="text text-white total">${option.total_sum}</td>
+              <td class="text text-white balance">${option.current_balances}</td>
+          </tr>
+      `;
+
+      tbody.innerHTML += rowHTML;
+
+      // Update the counts based on the bill type
+      switch (option.bill_type) {
+          case 'purchase_bill':
+              purchaseBillCount++;
+              break;
+          case 'recurring_bill':
+              recurringBillCount++;
+              break;
+          case 'vendor_credit':
+              vendorCreditBillCount++;
+              break;
+      }
+  });
+
+  // Display the count of each bill type
+  document.getElementById('type1').textContent = purchaseBillCount;
+  document.getElementById('type2').textContent = recurringBillCount;
+  document.getElementById('type3').textContent = vendorCreditBillCount;
+
+  combineRows();
+  calculateTotalBillAmount();
+}
+
+
+
+
+function displayCurrentBalances(currentBalances) {
+  if (!currentBalances || !Array.isArray(currentBalances)) {
+    console.error('Invalid or missing currentBalances data:', currentBalances);
+    return;
+  }
+
+  const tbody = document.getElementById('dataTableBody');
+
+  console.log('Received currentBalances:', currentBalances);
+
+  currentBalances.forEach(function (balance) {
+    const vendorId = balance.vendor_id;
+    const currentBalance = parseFloat(balance.current_balance);
+
+    console.log(`Vendor ID: ${vendorId}, Received Balance: ${balance.current_balance}, Parsed Balance: ${currentBalance}`);
+
+    if (!isNaN(currentBalance)) {
+      // Find the row corresponding to the vendor and update the current_balance cell
+      const row = Array.from(tbody.getElementsByTagName('tr')).find(row => {
+        const vendorIdCell = row.querySelector('td.vendor_email');
+        return vendorIdCell && vendorIdCell.textContent == vendorId;
+      });
+
+      if (row) {
+        const currentBalanceCell = row.querySelector('td.balance');
+        if (currentBalanceCell) {
+          // Set the value to the current balance
+          currentBalanceCell.textContent = currentBalance.toFixed(2);
+        }
+      } else {
+        console.log(`No row found for Vendor ID: ${vendorId}`);
+      }
+    } else {
+      console.log(`Invalid current_balance for Vendor ID: ${vendorId}`);
+      // If current_balance is NaN, you can set a specific value or message
+      const row = Array.from(tbody.getElementsByTagName('tr')).find(row => {
+        const vendorIdCell = row.querySelector('td.vendor_email');
+        return vendorIdCell && vendorIdCell.textContent == vendorId;
+      });
+
+      if (row) {
+        const currentBalanceCell = row.querySelector('td.balance');
+        if (currentBalanceCell) {
+          // Set a specific value or message for NaN
+          currentBalanceCell.textContent = 'N/A';
+        }
+      }
+    }
+  });
+}
+
+
+
+
+</script>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://unpkg.com/html2pdf.js"></script>
+
+
+{%endblock%}

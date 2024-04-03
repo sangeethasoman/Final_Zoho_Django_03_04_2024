@@ -1,0 +1,1301 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<style>            
+  .modal {
+    z-index: 9999;
+    overflow: scroll;
+  }
+
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+  }
+
+
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    padding: 1px;
+    margin: 0;
+  }
+  
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    margin-bottom: 20px;
+  }
+  
+  .logo img {
+    max-height: 100px;
+  }
+  
+  .company-info h2 {
+    margin: 0;
+    font-size: 2em;
+  }
+  
+  .company-info p {
+    margin: 0;
+    line-height: 1.5;
+  }
+  
+  .i.invoice-box {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+  
+  .invoice-box h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+  }
+  
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .invoice-details p, .client-details p {
+    margin: 5px 0;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  #th {
+    background-color: #f2f2f2;
+    color: black;
+  }
+  
+  .invoice-total {
+    margin-top: 20px;
+    text-align: right;
+  }
+  
+  .invoice-total p {
+    margin: 5px 0;
+  }
+  
+  footer {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    text-align: center;
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 20px;
+  }
+  
+  footer p {
+    margin: 5px 0;
+  }
+ 
+  .dropdown-item:hover{
+       color: chocolate;
+     }
+  
+     ::-webkit-scrollbar{
+    display: none;
+  }
+
+  .saleordertable {
+            border-collapse: collapse; /* Collapse table borders */
+            border: none; /* Remove table border */
+        }
+
+        .saleordertable  td {
+            border: none; /* Remove cell borders */
+            padding: 8px; /* Add padding for cell content */
+            text-align: left; /* Optional: Adjust text alignment */
+        }
+  #producttable {
+            border-collapse: collapse; /* Collapse table borders */
+            border: none; /* Remove table border */
+            color: white;
+        }
+
+        #producttable  td {
+            border: none; /* Remove cell borders */
+            padding: 8px; /* Add padding for cell content */
+            text-align: left; /* Optional: Adjust text alignment */
+        }
+
+        tr.clickable {
+            cursor: pointer;
+        }
+
+
+        @media print{
+        body{
+            visibility: hidden !important; /* hide everything in body when in print mode*/
+        }
+
+        .printContainer {
+            visibility: visible !important; /* Override the rule above to only show the printables*/
+            position: absolute;
+            z-index: 99999;
+            top: 0;
+            left: 0;
+            width: 103vh;
+            height: 150vh;
+        } 
+    }
+
+    .scrollable-table {
+  max-height: 80%; /* Maximum height for the tooltip */
+  overflow-y: auto; /* Add vertical scrollbar when content overflows */
+        }
+
+                /* Style for the container */
+
+
+        /* Style for table cell */
+        .table-cell {
+            padding: 5px;
+        }
+
+                  </style>
+    
+<section >
+  <div class="row fixed-top  " style="top: 7rem; margin-left: 15rem;position: fixed; ">
+   
+  <div>
+    <div class="col-md-12"  style="width: 100%;">
+      <div class="row">
+        
+        <div class="col-md-3" style="border-right: 1px solid white; overflow-y: scroll; height: 84vh;">
+          <div class="row">
+            <a class="text-white" style="font-size: 1.5rem;">Items</a>
+            <div class="col-md-12">
+            <input type="text" id="search" class="form-control bg-light text-dark mt-2 " placeholder="Search.." autocomplete="off">
+          </div>
+          <div class="col-md-2">
+            <div class="dropdown">
+              <a class="btn text-center px-4 pt-1 mt-1 btn-outline-warning" id="sortbutton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button" style="width: 4rem;height: 2rem;">
+                <i  class="fas fa-sort m-1"></i>
+              </a>
+              <div class="dropdown-menu m-1">
+               {% comment %} <a class="dropdown-item" href="{% url 'detail' v.id %}">All</a> {% endcomment %}
+                
+                <a class="dropdown-item" onclick="sortTable()">Customer Name</a>
+                <a class="dropdown-item" onclick="sortTablebal()">Total</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6"></div>
+          <div class="col-md-4">              
+            <a style="width: 4rem;height: 2rem; width: fit-content;" class="btn btn btn-outline-warning text-right px-3 py-2 mt-1" href="{% url 'additem' %}"><i class="fa fa-plus "></i>New</a>
+          </div>
+          </div>   
+
+          <div class="scrollable-table">
+            <table class="table  text-white" id="myTable">
+            
+              <tbody>
+                {% for v in allproduct %}
+       
+                <tr class="clickable" id="{{p.id}}">
+       
+                  <td class="justify-content-between align-items-center ">
+                    {% comment %} {{}}<br><br> {% endcomment %}
+                        <label>{{v.Name}} </label>
+                  </td>
+                  <td><br><br>
+                      <label class="text-end d-block">{{v.hsn}}</label>
+                      
+                  </td>
+                </tr>
+               
+                {% endfor %}
+               
+              </tbody>
+            </table>
+          </div>
+
+       
+        </div> 
+
+
+        
+        <div class="col-md-9 ml-1  mb-5 " id="overviewdiv">
+          <div class="row">
+              {% comment %} <div class="col-md-7" >
+                <a class="text-white" style="font-size: 1.5rem;"><h2>{{sale.sales_no}}</h2></a>
+              </div> {% endcomment %}
+          </div>
+          <div class="row">
+            <div class="col-md-6" >
+              <a class="btn" style="background-color: chocolate; margin-right: 2vh;"><i class="fas fa-eye"></i> Overview</a>
+              <a class="btn" id="transactionbtn" onclick="totemplate()" style="background-color: white; color: black; margin-right: 2vh;"><i class="fas fa-file-alt"></i>  Transcations</a>
+
+            </div>
+            
+            <div class="col-md-6" style="text-align: right;">
+              {%  if product.satus == 'Active'  %}
+              <a class="btn  btn-outline-warning " href="{% url 'item_statuschange' product.id %}">{{product.satus}}</a>
+            {% elif product.satus == 'Inactive'  %}
+              <a class="btn  btn-outline-warning" href="{% url 'item_statuschange' product.id %}" >{{product.satus}}</a>
+            {% endif %}
+             <a href="{% url 'additem' %}"  class=" text-dark" >  
+                  <button class="btn btn-outline-warning"  title="Edit"><i class="fas fa-plus"></i></button>
+                </a>
+
+                 <a class="text-dark"     data-toggle="dropdown"  >
+                  <button class="btn btn-outline-warning "  title="Share"><i class="fas fa-share"></i></button>
+               </a>
+               <div class="dropdown-menu " >
+                <a class="dropdown-item" data-target="#shareBillEmail" data-toggle="modal">GMAIL</a>
+                <a class="dropdown-item" href="javascript:void(0);" onclick="shareOnWhatsApp()">WhatsApp</a>
+               </div>
+               <a href="{% url 'cleer' product.id %}" class="  text-dark" > 
+                <button class="btn btn-outline-warning"  title="Delete"><i class="fas fa-trash-alt"></i></button>
+              </a>
+              <a  class="  text-dark"  onclick="exportToPDF()">
+                <button class="btn btn-outline-warning"  title="Pdf"><i class="fas fa-file-pdf-o"></i></button>
+              </a>
+
+              <a class=" text-dark"  onclick="printSelectedArea()"  >
+                <button class="btn btn-outline-warning"  title="Print"><i class="fas fa-print"></i>
+                </button> 
+               </a> 
+              </div>
+          </div><br>
+
+          <div class="row" id="div-to-pdf" style="background-color: #ffddb0; overflow-y: scroll; height: 71vh; margin-left:1px; margin-right: 1rem; ">
+
+            <div class="row text-center">
+                <h2 style="color: #000000;"><br>
+                    <hr>
+                </h2>
+            </div>
+            <div class="gen-info col-6 " style="padding-left: 3rem; overflow-y: scroll; ">
+                <div class="row mt-1">
+                    <div class="col-5"><label class="text-dark" for="">Account Type:</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.type}}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Unit :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.unit.unit}}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Created Source :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.user.username}}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">HSN :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.hsn}}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Tax Preference :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.tax}}</p>
+                    </div>
+                </div>
+               {% if sale.customer.GSTIN %}
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Stock On Inventory :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.stock}}
+                        </p>
+                    </div>
+                </div>
+                {% endif %} 
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Cost Price :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.p_price}}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Purchase Account :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.purchase.Account_name}}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Selling Price :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.s_price}}</p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-5"><label class="text-dark" for="">Sales Account :</label></div>
+                    <div class="col-7">
+                        <p class="bold text-dark" style="max-width: 15rem;word-wrap: break-word;">{{product.sales.Account_name}}</p>
+                    </div>
+                </div>
+                
+            <div class="p-info col-6" style="height: 100px; margin-bottom: 1px; margin-left: 500px;">
+ 
+             <div class="card" style="background-color: rgb(110, 61, 46); padding-left: 500rem; padding-top: 1rem;"> 
+                  <div class="row text-center">
+                    <h2>PURCHASE DETAILS
+                        <hr>
+
+                    </h2>
+                    
+                </div>
+                
+                
+                      
+                    <div class="row mt-2">
+                        <div class="col-5"><label for="">Cost Price :</label></div>
+                        <div class="col-7">
+                            <p class="bold">{{product.p_price}}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-5"><label for="">Sellig Price :</label></div>
+                        <div class="col-7">
+                            <p class="bold">{{product.s_price}}</p>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                      <h2>SALES DETAILS
+                          <hr>
+                      </h2>
+                  </div>
+                
+                                            
+                      <div class="row mt-2">
+                          <div class="col-5"><label for="">Sales Account :</label></div>
+                          <div class="col-7">
+                              <p class="bold">{{product.sales.Account_name}}</p>
+                          </div>
+                      </div>
+                      <div class="row mt-2">
+                          <div class="col-5"><label for="">Description :</label></div>
+                          <div class="col-7">
+                              <p class="bold">{{product.s_desc}}</p>
+                          </div>
+                      </div>
+                      <div class="row mt-2">
+                        <div class="col-5"><label for="">Stock On Inventory :</label></div>
+                        <div class="col-7">
+                            <p class="bold">{{product.stock}}</p>
+                        </div>
+                    </div>
+                        <hr>
+                    </div>
+                
+                </div><br>
+            </div>
+        </div>
+
+          <!-- <div class="row">
+            <div class="tab-content" style="background-color: rgba(252, 236, 217, 0.8); ">
+              <div class="tab-pane fade active show" id="overview" role="tabpanel" aria-labelledby="home-tab">
+                  <div class="row">
+                      <div class="col-md-6" id="orderinfo" 
+                      style="box-shadow: 5px 5px 10px rgb(45, 45, 45); background-color: #ffddb0; 
+                      border-radius: 1vh; overflow-y: scroll;height: 500px; margin-top: -2vh; " >
+                          <div class="overview text-dark" style="background-color: #ffddb0;" ><br>
+                              <h2 class="text-dark" style="text-transform: uppercase; font-size: x-large;"><b>Sales Order</b></h2>
+                              
+                              <table class="table-responsive saleordertable" cellspacing="0" cellpadding="0">
+                                <tbody>
+                                  <tr>
+                                    <td>Sale Order No</td>
+                                    <td>:</td>
+                                    <td>{{sale.sales_no}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Reference</td>
+                                    <td>:</td>
+                                    <td>{{sale.reference}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Customer Name</td>
+                                    <td>:</td>
+                                    <td>{{sale.customer.customerName}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Customer Mail</td>
+                                    <td>:</td>
+                                    <td>{{sale.customer.customerEmail}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>GST Treatment</td>
+                                    <td>:</td>
+                                    <td>{{sale.customer.GSTTreatment}}</td>
+                                  </tr>
+                                  {% if sale.customer.GSTIN %}
+                                  <tr>
+                                    <td>GST Number</td>
+                                    <td>:</td>
+                                    <td>{{sale.customer.GSTIN}}</td>
+                                  </tr>
+                                  {% endif %}
+                                  <tr>
+                                    <td>Source of Supply</td>
+                                    <td>:</td>
+                                    <td>{{sale.sos}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Sale Order Date</td>
+                                    <td>:</td>
+                                    <td>{{sale.sales_date}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Expiry Date</td>
+                                    <td>:</td>
+                                    <td>{{sale.ship_date}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Payment Term</td>
+                                    <td>:</td>
+                                    <td>{{sale.terms.Terms}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Payment Method</td>
+                                    <td>:</td>
+                                    <td>{{sale.pay_method}}</td>
+                                  </tr>
+                                  {% if sale.pay_method == 'upi' %}
+                                  <tr>
+                                    <td>UPI ID</td>
+                                    <td>:</td>
+                                    <td>{{sale.upi_id}}</td>
+                                  </tr>
+                                  {% elif sale.pay_method == 'cheque' %}
+                                  <tr>
+                                    <td>Cheque ID</td>
+                                    <td>:</td>
+                                    <td>{{sale.cheque_id}}</td>
+                                  </tr>
+                                  {% elif sale.pay_method != 'cash' %}
+                                  <tr>
+                                    <td>Bank Account</td>
+                                    <td>:</td>
+                                    <td>{{bank.ac_no}}</td>
+                                  </tr>
+                                  {% endif %}
+                                  <tr>
+                                    <td>Subtotal</td>
+                                    <td>:</td>
+                                    <td>{{sale.subtotal}}</td>
+                                  </tr>
+                                  {% if sale.igst != '0.00' %}
+                                  <tr>
+                                    <td>IGST</td>
+                                    <td>:</td>
+                                    <td>{{sale.igst}}</td>
+                                  </tr>
+                                  {% endif %}
+                                  {% if sale.cgst != '0.00' %}
+                                  <tr>
+                                    <td>CGST</td>
+                                    <td>:</td>
+                                    <td>{{sale.cgst}}</td>
+                                  </tr>
+                                  {% endif %}
+                                  {% if sale.sgst != '0.00' %}
+                                  <tr>
+                                    <td>SGST</td>
+                                    <td>:</td>
+                                    <td>{{sale.sgst}}</td>
+                                  </tr>
+                                  {% endif %}
+                                  <tr>
+                                    <td>Tax Amount</td>
+                                    <td>:</td>
+                                    <td>{{sale.t_tax}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Shipping Charge</td>
+                                    <td>:</td>
+                                    <td>{{sale.sh_charge}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Adjustment</td>
+                                    <td>:</td>
+                                    <td>{{sale.adjust}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Total Amount</td>
+                                    <td>:</td>
+                                    <td>{{sale.grandtotal}}</td>
+                                  </tr>
+                                  {% if sale.advance != 0.0 %}
+                                  <tr>
+                                    <td>Advance</td>
+                                    <td>:</td>
+                                    <td>{{sale.advance}}</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Balance Amount</td>
+                                    <td>:</td>
+                                    <td>{{sale.balance}}</td>
+                                  </tr>
+                                  {% endif %}
+                                </tbody>
+                              </table> 
+                          </div>
+                      </div>
+                      <div class="col-md-6" >
+                          <div class="card" id="productinfo" style="background-color:#8b3131; padding:1rem; margin-top: -2vh;" >
+                              <div class="row" style="overflow-y: scroll;height: 500px; margin-top: -2vh; " >
+                                  <div class="card-title mb-4 mt-3" style="font-size: x-large;"><b>PRODUCT INFORMATION</b>
+                                  </div>
+                                      <table class="table table-responsive" id="producttable">
+                                        <tbody id="productbody">
+                                          {% for i in saleitem %}
+                                          <tr>
+                                            <td>Product Name</td>
+                                            <td>:</td>
+                                            <td>{{i.product}}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>HSN Number</td>
+                                            <td>:</td>
+                                            <td>{{i.hsn}}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Product Quantity</td>
+                                            <td>:</td>
+                                            <td>{{i.quantity}}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Product Rate</td>
+                                            <td>:</td>
+                                            <td>{{i.rate}}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Product Discount</td>
+                                            <td>:</td>
+                                            <td>{{i.desc}}</td>
+                                          </tr>
+                                          <tr>
+                                            <td>Product Tax</td>
+                                            <td>:</td>
+                                            <td>{{i.tax}}</td>
+                                          </tr>
+                                          <tr >
+                                            <td>Product Total</td>
+                                            <td>:</td>
+                                            <td>{{i.total}}
+                                            </td>
+                                          </tr>
+                                          <tr style="border-bottom: solid; border-bottom-width: thin; ">
+                                            <td></td>
+                                          </tr>
+                                          {% endfor %}
+                                        </tbody>
+                                      </table>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  
+              </div>
+
+
+             
+          </div>
+          </div> -->
+          
+        </div>
+        
+        <div class="col-md-9" id="templatediv" style="display: none;">
+          <div class="row" >
+            <div class="col-md-7" >
+              <a class="text-white" style="font-size: 1.5rem;"><h2>{{sale.sales_no}}</h2></a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6" >
+              <a class="btn" id="overviewbtn" onclick="tooverview()" style="background-color: white; color: black;"><i class="fas fa-eye"></i> Overview</a>
+              <a class="btn" style="background-color: chocolate; margin-left: 2vh;"><i class="fas fa-file-alt"></i>  Transcations</a>
+
+            </div>
+
+            <div class="col-md-6" style="text-align: right;">
+              {%  if product.satus == 'Active'  %}
+             <a class="btn  btn-outline-warning " href="{% url 'item_statuschange' product.id %}">{{product.satus}}</a>
+           {% elif product.satus == 'Inactive'  %}
+             <a class="btn  btn-outline-warning" href="{% url 'item_statuschange' product.id %}" >{{product.satus}}</a>
+           {% endif %}
+             <a href="{% url 'edititem' product.id %}"  class=" text-dark" > 
+                <button class="btn btn-outline-warning"  title="Edit"><i class="fas fa-edit"></i></button>
+              </a>
+              <a class="text-dark"     data-toggle="dropdown"  >
+                <button class="btn btn-outline-warning "  title="Share"><i class="fas fa-share"></i></button>
+             </a>
+             <div class="dropdown-menu " >
+              <a class="dropdown-item" data-target="#shareBillEmail" data-toggle="modal">GMAIL</a>
+                <a class="dropdown-item" href="javascript:void(0);" onclick="shareOnWhatsApp()">WhatsApp</a>
+             </div>
+
+            <a href="{% url 'cleer' product.id %}" class="  text-dark" > 
+              <button class="btn btn-outline-warning"  title="Delete"><i class="fas fa-trash-alt"></i></button>
+            </a>
+            <a  class="  text-dark"  onclick="exportToPDF()">
+              <button class="btn btn-outline-warning"  title="Pdf"><i class="fas fa-file-pdf-o"></i></button>
+            </a>
+            <a class=" text-dark"  onclick="printSelectedArea()"  >
+              <button class="btn btn-outline-warning"  title="Print"><i class="fas fa-print"></i>
+              </button> 
+             </a>
+             <button onclick="toggleModal()" class="btn btn-outline-warning ">
+              <i class="fa fa-solid fa-comment"></i>
+            </button>
+             {% comment %} <label for="file-input" class="btn ml-1  btn-outline-warning " data-toggle="tooltip" title="Upload Attachments" >
+              <i class="fas fa-paperclip"></i>
+            </label>
+            <input id="file-input" type="file" name="file" style="display:none;" onchange="uploadFile()">
+            <!-- <a class="btn ml-1  " href="" id="sts"></a> -->
+            </div> {% endcomment %}
+          </div>
+
+        </div>
+             
+          <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="myModalLabel">Add Comment</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form id="commentForm" method="post" action="{% url 'commentproduct' product.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                      <label for="commentInput">Comment:</label>
+                      <textarea class="form-control bg-white text-dark" id="commentInput" name="comment" rows="3" style="height: 80px;"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" id="submitCommentBtn" onclick="submitComment()">Submit</button>
+                    </div>
+                    <div class="container-fluid">
+                      <table class="table table-responsive-md mt-4 table text-white">
+                        <thead>
+                          <tr>
+                            <th>sl no.</th>
+                            <th>Comments</th>
+                            <th>Delete</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for com in comments %}
+                          <tr class="table-row">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ com.content }}</td>  
+                            <td><a href="{% url 'delete_comment' product.id com.id %}">Delete</a></td>
+                          </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+
+             <div class="mt-3" style="overflow-y: scroll;height: 600px;width: 100%; margin-left: -1vh">
+         
+               <section id="selected-area" style="background-color: rgb(255, 221, 176);"class=" p-2 m-2">
+                   <header style="	background-color: #8b3131;border-radius: 1rem;">
+                       <div class="logo ">
+                           <img class="ml-2" width="100rem" style="border-radius: 50%;" src="{% static 'images/zlogo.png' %}" alt="Company Logo">
+                       </div>
+                       <div style="background: #8b3131;color: white;" class="company-info">
+                           <h2 class="text-white">{{company.company_name}}</h2>
+                           <p class="text-white"> {{company.address}}<br>{{comp.city}}</p><p> {{company.contact_number}}</p><p>{{company.company_email}}</p>
+                       </div>
+                   </header>
+                   <div class="invoice-box">
+                       <h1 class="text-dark">Items</h1>
+                       <div class="invoice-header">
+                           <div class="invoice-details text-dark">
+                            <table>
+                              <tr>
+                                  <td class="table-cell text-black" style="border: none;">Sales Price</td>
+                                  <td class="table-cell text-black" style="border: none;">:</td>
+                                  <td class="table-cell text-black" style="border: none;">{{product.s_price}}</td>
+                              </tr>
+                              <tr>
+                                  <td class="table-cell text-black" style="border: none;">Purchase Price</td>
+                                  <td class="table-cell text-black" style="border: none;">:</td>
+                                  <td class="table-cell text-black" style="border: none;">{{product.p_price}}</td>
+                              </tr>
+                              <tr>
+                                  <td class="table-cell text-black" style="border: none;">Minimum Stock To Maintain</td>
+                                  <td class="table-cell text-black" style="border: none;">:</td>
+                                  <td class="table-cell text-black" style="border: none;">{{product.minimum_stock}}</td>
+                              </tr> 
+                            </table>
+                           </div>
+                          {% comment %} <div class="client-details" style="width: 50vh;"> {% endcomment %}
+                            <div class="client-details" style="width: 50vh;" >
+                              <table>
+                              <tr>
+                                  <td class="table-cell text-black" style="border: none;">Stock Quantity : {{product.stock}}</td>
+                              </tr>
+                              <tr>
+                                <td class="table-cell text-black" style="border: none;">Stock Value : {{stock}}</td>
+                            </tr>
+                              {% comment %} {% if sale.customer.Address1 %}
+                              <tr>
+                                  <td class="table-cell text-black" style="border: none;">{{sale.customer.Address1}}</td>
+                              </tr>
+                              {% endif %}
+                              <tr>
+                                <td class="table-cell text-black" style="border: none;">{{sale.customer.GSTTreatment}}</td>
+                              </tr>
+                              {% if sale.customer.GSTIN %}
+                              <tr>
+                                  <td class="table-cell text-black" style="border: none;">{{sale.customer.GSTIN}}</td>
+                              </tr>
+                              {% endif %} {% endcomment %}
+                            </table>
+                          </div>
+                       </div>
+                       
+                       <table >
+                           <thead >
+                               <tr>
+                                
+                                    <th id="th" style="text-align: center;"class="text-black">Transcations</th>
+                                   <th id="th" style="text-align: center;"class="text-black">Type</th>
+                                    <th id="th" style="text-align: center;" class="text-black">Name</th>
+                                   <th id="th" style="text-align: center;" class="text-black">Date</th>
+                                   <th id="th" style="text-align: center;" class="text-black">Quantity</th>
+                                   <th id="th" style="text-align: center;" class="text-black">Price</th>
+                                   <th id="th" style="text-align: center;" class="text-black">Status</th>
+                                    {% comment %} <th id="th" style="text-align: center;"> Total</th>  {% endcomment %}
+                               </tr>
+                           </thead>
+                           <tbody class="text-black">
+                            {% for v in estimate %}
+
+                            <tr>
+                              <td>Estimate</td>
+                              <td>{{v.estimate.type}}</td>
+
+                              <td>{{ v.estimate.customer_name }}</td>
+
+                              <td>{{ v.estimate.estimate_date }}</td>
+                              <td>{{ v.quantity }}</td>
+                              <td>{{ v.rate }}</td>
+                              <td>{{ v.estimate.status }}</td>
+            
+                              <td>{{ product.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                            {% for s in sales_order %}
+                            <tr>
+                              <td>Sales Order</td>
+                              <td>{{ s.sale.type }}</td>
+
+                              <td>{{ s.sale.customer.customerName }}</td>
+                              <td>{{ s.sale.sales_date }}</td>
+                              <td>{{ s.quantity }}</td>
+                              <td>{{ s.rate }}</td>
+                              <td>{{ s.sale.status }}</td>
+                            {% endfor %}
+                            </tr>
+                            
+                            {% for r in recurring_invoice %}
+                            <tr>
+                              <td>Recurring Invoice</td>
+                              <td></td>
+                
+
+                              <td>{{ r.ri.cname }}</td>
+                              <td>{{ r.ri.start }}</td>
+                              <td>{{ r.quantity }}</td>
+                              <td>{{ r.rate }}</td>
+                              <td>{{ r.ri.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                            {% for p in purchase_order %}
+                            <tr>
+                              <td>Purchase Order</td>
+                              <td></td>
+                              
+
+                              <td>{{ p.PO.customer_name }}</td>
+                              <td>{{ p.PO.Ord_date }}</td>
+                              <td>{{ p.quantity }}</td>
+                              <td>{{ p.rate }}</td>
+                              <td>{{ p.PO.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                            {% for r in recurring_bills %}
+                            <tr>
+                              <td>Recurring Bills</td>
+                              <td></td>
+                              <td>{{ r.recur_bills.customer_name }}</td>
+                              <td>{{ r.recur_bills.start_date }}</td>
+                              <td>{{ r.quantity }}</td>
+                              <td>{{ r.rate }}</td>
+                              <td>{{ product.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                            {% for i in invoice %}
+                            <tr>
+                              <td>Invoice</td>
+                              <td></td>
+                              <td>{{ i.inv.customer.customerName }}</td>
+                              <td>{{ i.inv.inv_date }}</td>
+                              <td>{{ i.quantity }}</td>
+                              <td>{{ i.rate }}</td>
+                              <td>{{ product.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                            {% for d in deliveryChellan %}
+                            <tr>
+                              <td>DeliveryChellan</td>
+                              <td></td>
+                              <td>{{ d.chellan.customer_name }}</td>
+                              <td>{{ d.chellan.chellan_date }}</td>
+                              <td>{{ d.quantity }}</td>
+                              <td>{{ d.rate }}</td>
+                              <td>{{ product.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                            {% for b in bills %}
+                            <tr>
+                              <td>Bills</td>
+                              <td></td>
+                              <td>{{ b.purchase_bill.customer_name }}</td>
+                              <td>{{ b.purchase_bill.bill_date }}</td>
+                              <td>{{ b.quantity }}</td>
+                              <td>{{ b.rate }}</td>
+                              <td>{{ product.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                            {% for e in expense %}
+                            <tr>
+                              <td>Expense</td>
+                              <td></td>
+                              <td>{{ e.customername }}</td>
+                              <td>{{ e.start_date }}</td>
+                              <td>{{ e.quantity }}</td>
+                              <td>{{ e.amount }}</td>
+                              <td>{{ product.status }}</td>
+                            {% endfor %}
+                            </tr>
+            
+                          </tbody>
+                       </table><br>
+                       
+
+                       
+                      
+                          </div>
+
+                        </div>
+
+                       </div>
+                      
+                   </div>
+ 
+                   <footer class="mb-5">
+                       <p class="text-dark">&copy; Zho Books 2023 | Info park kakkanad kochi, Ernamkulam, kerala India 12345 | Phone: (123) 456-7890 | Email: info@zohodjango.com</p>
+                   </footer>
+                   <div class="mt-5 mb-5">
+       
+                   </div>
+
+ 
+                  </section>
+ 
+       
+ <!-- Share bill Modal -->
+ <div class="modal fade" id="shareBillEmail">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content" style="background: rgb(32, 35, 37);border-radius: 20px;">
+      <div class="modal-header" style="background: rgb(32, 35, 37);">
+        <h5 class="m-3 text-uppercase" id="shareBillEmailLabel">Share Sales Order Via Email</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body" style="background: rgb(32, 35, 37);">
+        <div class="card p-3 m-3">
+          <form action="{% url 'sharePricelistToEmail' product.id %}" method="post" class="needs-validation"
+          <form action="" method="post" class="needs-validation"
+
+          id="share_to_email_form" autocomplete="off">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="emailIds">Email IDs</label>
+              <textarea class="form-control text-dark" name="email_ids" id="emailIds" rows="5"
+                placeholder="Multiple emails can be added by separating with a comma(,)." required></textarea>
+            </div>
+            <div class="form-group mt-2">
+              <label for="item_unitname">Message(optional)</label>
+              <textarea name="email_message" id="email_message" class="text-dark form-control" cols=""
+                rows="4" placeholder="This message will be sent along with Bill details."></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer d-flex justify-content-center" style="border-top: 1px solid #ffff;">
+          <input type="submit" id="share_with_email"
+            class="submitShareEmailBtn rounded-pill text-grey w-50 my-4 mx-3" value="SEND MAIL">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
+</div>
+
+            </div>
+ 
+ 
+               </div>
+               
+          </div>
+          
+                
+        </div>
+     
+        </div>
+     
+       </div>
+  </div>
+ 
+   </div>
+  
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+</section>
+{% for message in messages %}
+
+<script>
+  let msg = '{{message}}';
+  alert(msg);
+</script>
+{% endfor %}
+
+
+
+
+<script>
+<script>
+      function exportToPDF(){
+        var content = document.getElementById('selected-area');
+        html2pdf()
+        .from(content)
+        .save('item.pdf')
+    }
+</script>
+
+  <script>
+    // Get the div element by its ID
+    var divElement = document.getElementById("orderinfo");
+
+    // Get the height of the div using offsetHeight
+    var divHeight = divElement.offsetHeight;
+
+    var divElement = document.getElementById("productinfo");
+
+        // Set the height of the div
+        divElement.style.height = `${divHeight}px`;
+
+    // Log the height to the console
+</script>
+
+<script>
+  function printSelectedArea(area){
+      
+      var printContents = document.getElementById("selected-area").innerHTML;
+      document.getElementById("selected-area").style.backgroundColor = "white"
+var $printerDiv = $('<div class="printContainer bg-white"></div>'); // create the div that will contain the stuff to be printed
+$printerDiv.html(printContents); // add the content to be printed
+$('body').append($printerDiv).addClass("printingContent"); // add the div to body, and make the body aware of printing (we apply a set of css styles to the body to hide its contents)
+
+window.print(); // call print
+$printerDiv.remove(); // remove the div
+$('body').removeClass("printingContent");
+      
+  }
+</script>
+
+<script>
+
+const rows = document.querySelectorAll('.clickable');
+
+rows.forEach(row => {
+    row.addEventListener('click', () => {
+      var currentURL = window.location.href
+      const rowId = row.id;
+      var newURL = currentURL.replace(/\d+$/, rowId);
+      window.location.href = newURL;
+    });
+});
+
+
+
+
+
+</script>
+
+<script>
+  function totemplate(){
+    document.getElementById('templatediv').style.display = 'block'
+    document.getElementById('overviewdiv').style.display = 'none'
+  }
+
+  function tooverview(){
+    document.getElementById('templatediv').style.display = 'none'
+    document.getElementById('overviewdiv').style.display = 'block'
+  }
+</script>
+
+<script>
+  var $rows = $('#myTable tbody tr');
+  $('#search').keyup(function() {
+      var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+      
+      $rows.hide().filter(function() {
+          var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+          return ~text.indexOf(val);
+      }).show();
+  });
+
+  </script>
+
+<script>
+  // Function to sort the table by the selected column
+  function sortTable() {
+      var table, rows, switching, i, x, y, shouldSwitch;
+      table = document.getElementById("myTable");
+      switching = true;
+
+      while (switching) {
+          switching = false;
+          rows = table.rows;
+
+          for (i = 0; i < rows.length - 1; i++) {
+              shouldSwitch = false;
+              x = rows[i].getElementsByTagName("label")[0];
+              y = rows[i + 1].getElementsByTagName("label")[0];
+
+              if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                  shouldSwitch = true;
+                  break;
+              }
+          }
+
+          if (shouldSwitch) {
+              rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+              switching = true;
+          }
+      }
+  }
+  function sortTablebal() {
+      var table, rows, switching, i, x, y, shouldSwitch;
+      table = document.getElementById("myTable");
+      switching = true;
+
+      while (switching) {
+        switching = false;
+        rows = table.rows;
+
+        for (i = 0; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = parseFloat(rows[i].getElementsByTagName("td")[1].textContent.replace('₹', '').trim());
+            y = parseFloat(rows[i + 1].getElementsByTagName("td")[1].textContent.replace('₹', '').trim());
+
+            if (x > y) {
+                shouldSwitch = true;
+                break;
+            }
+        }
+
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+        }
+    }
+  }
+
+</script>
+
+
+<script>
+  
+  $(document).ready(function () {
+    $('#share_with_email').on('click', function () {
+      var emailsInput = document.getElementById('emailIds');
+      var emailsString = emailsInput.value.trim();
+
+      var emails = emailsString.split(',').map(function (email) {
+        return email.trim();
+      });
+
+      var emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
+      var invalidEmails = []
+      if (emailsString == "") {
+        alert('Enter valid email addresses..')
+      }
+      else {
+        for (var i = 0; i < emails.length; i++) {
+          var currentEmail = emails[i];
+
+          if (currentEmail != "" && !emailRegex.test(currentEmail)) {
+            console.log(currentEmail + ' is invalid!');
+            invalidEmails.push(currentEmail)
+          }
+        }
+
+        if (invalidEmails.length > 0) {
+          alert('Invalid emails..Please check!\n' + invalidEmails)
+          // alert(invalidEmails)
+        } else {
+          $('#share_to_email_form').submit();
+        }
+      }
+    })
+  });
+
+
+  function shareOnWhatsApp() {
+    var url = window.location.href;
+    var text = url;
+    text = encodeURIComponent(text);
+    var whatsappUrl = "whatsapp://send?text=" + text;
+    window.location.href = whatsappUrl;
+  }
+
+  function exportToPDF() {
+    var content = document.getElementById('selected-area');
+    html2pdf()
+      .from(content)
+      .save('{{sale.sales_no}}' + '.pdf')
+  }
+  function exportToPDF2() {
+    var content = document.getElementById('selected-area2');
+    html2pdf()
+      .from(content)
+      .save('{{sale.sales_no}}' + '.pdf')
+  }
+  function exportToPDF3() {
+    var content = document.getElementById('selected-area3');
+    html2pdf()
+      .from(content)
+      .save('{{sale.sales_no}}' + '.pdf')
+  }
+  function exportToPDF4() {
+    var content = document.getElementById('printslip');
+    html2pdf()
+      .from(content)
+      .save('{{sale.sales_no}}' + '.pdf')
+  }
+
+</script>
+
+<script>
+  function toggleModal() {
+    const modal = document.getElementById("myModal");
+    if (modal.style.display === "none") {
+      modal.style.display = "block";
+      // You can add an AJAX call here to load comments dynamically, if needed
+    } else {
+      modal.style.display = "none";
+    }
+  }
+
+  // Function to close the modal
+  function closeModal() {
+    const modal = document.getElementById("myModal");
+    modal.style.display = "none";
+  }
+
+  function submitComment() {
+    document.getElementById('commentForm').submit();
+  }
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

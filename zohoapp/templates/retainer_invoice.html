@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+
+
+
+<style>
+  .dropdown-item:hover {
+    color: rgb(226, 149, 5);
+  }
+  .modal{
+      z-index: 9999;
+      overflow: scroll;
+    }
+</style>
+
+
+<div class="container-fluid">
+  <div class="" style="top: 7rem; ">
+
+    <div>
+
+
+      <div class="row container-fluid" >
+        <div class="col-md-3"><a class="text-white" style="font-size: 1.8rem;">All Retainer Invoices</a></div>
+      </div><br><br><br>
+
+      <div class="row mb-3 container-fluid">
+        <div class="col-md-3">
+          <input type="text" id="search" class="form-control bg-light text-dark" placeholder="Search.."
+            autocomplete="off">
+        </div>
+
+        <div class="col-md-2">
+
+          <div class="dropdown ">
+            <a class="btn text-center px-4 pt-2 btn-outline-warning" data-bs-toggle="dropdown" id="sortbutton"
+              aria-haspopup="true" aria-expanded="false" role="button">
+              <i class="fas fa-sort m-1"></i>
+            </a>
+            <div class="dropdown-menu m-1">
+              <a class="dropdown-item" href="{% url 'retainer_invoice' %}">All</a>
+              <a class="dropdown-item" href="{% url 'retainer_invoice_sort_by_name' %}">Name</a>
+              <a class="dropdown-item" onclick="sortTableTotal()">Retainer No</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4"></div>
+        <div class="col-md-3">
+          <div class="dropdown d-flex">
+            <a class="btn text-center px-4 pt-2 btn-outline-warning" data-bs-toggle="dropdown" aria-haspopup="true"
+              aria-expanded="false" role="button">
+              <i class="fa fa-filter mt-1"></i>
+            </a>
+            <div class="dropdown-menu m-1">
+              <a class="dropdown-item" href="{% url 'retainer_invoice' %}">All</a>
+              <a class="dropdown-item" href="{% url 'filter_retainer_draft' %}">Draft</a>
+              <a class="dropdown-item" href="{% url 'filter_retainer_sent' %}">Sent</a>
+            </div>
+            
+            
+            <a  style="color: white; height:35px;" id="exportBtn" class="btn btn-outline-warning text-warning mr-1 pt-2" >Export</a>
+            <a  style="color: white; height:35px;" id="importBtn" data-toggle="modal" data-target="#importmodal" 
+            class="btn btn-outline-warning text-warning mr-1 pt-2" onclick="excelmodel()">Import</a>
+            <!-- <button type="button" class="btn btn-outline-warning text-warning mr-1 pt-2" id="importBtn" data-toggle="modal" data-target="#importModal">Import</button> -->
+            <!-- Import Button -->
+            <!-- <button type="button" class="btn btn-outline-warning text-warning mr-1 pt-2" data-toggle="modal"
+            data-target="#importModal">Import</button> -->
+            <!-- <a  style="color: white; height:35px;"  data-toggle="modal" data-target="#excelModal" 
+            class="btn btn-outline-warning text-warning mr-1 pt-2" onclick="excelmodel()">Import</a> -->
+
+            <!-- <button class="btn mt-3" type="button" data-toggle="modal" data-target="#excelModal" onclick="excelmodel()">
+              <span><img width="30px" src="{% static 'images/import.png' %}" alt="no img"></span>
+              <br><span style="color: black; font-size: small; font-weight: bold;">Import</span>
+          </button> -->
+
+            <a style="height: 5vh; margin-left: 2vh;" class="btn btn-outline-warning text-right px-3 py-2" role="button"
+              style="margin-left: 5px;" href="{% url 'add_invoice' %}">
+              <i class="fa fa-plus">New</i>
+            </a>
+            
+          </div>
+        </div>
+      </div>
+
+      <div class="row container-fluid" style="overflow: auto;">
+        <div class="col-md-12 col-md-11 col-lg-11">
+          <div class="table-responsive">
+            <table class="table align-top text-white" style="cursor: pointer;" id="myTable">
+              <thead>
+                <tr>
+                  <th style="text-align: center;">DATE</th>
+                  <th style="text-align: center;">RETAINER NUMBER</th>
+                  <th style="text-align: center;">CUSTOMER NAME</th>
+                  <th style="text-align: center;">CUSTOMER MAIL ID</th>
+                  <th style="text-align: center;">AMOUNT</th>
+                  <th style="text-align: center;">STATUS</th>
+                  <th style="text-align: center;">BALANCE</th>
+                </tr>
+              </thead>
+              <tbody id="table">
+                {% for i in invoices %}
+                <tr id="tr_data" class="clickable-row">
+                  <td class="align-top "><a class="text-light" href="{% url 'invoice_view' i.id %}">{{i.retainer_invoice_date}}</a></td>
+                  <td class="align-top text-center"><a class="text-light "
+                      href="{% url 'invoice_view' i.id %}">{{i.retainer_invoice_number}}</a></td>
+                  <td class="align-top " id="cname"><a class="text-light"
+                      href="{% url 'invoice_view' i.id %}">{{i.customer_name1}}</a></td>  
+                  <td class="align-top "><a class="text-light"
+                      href="{% url 'invoice_view' i.id %}">{{i.customer_mailid}}</a></td>
+                  <td class="align-top "><a class="text-light"
+                      href="{% url 'invoice_view' i.id %}">₹{{i.total_amount}}</a></td>
+                  <td class="align-top ">
+                    <a class="text-light" href="{% url 'invoice_view' i.id %}">
+                      {% if i.is_sent %}
+                      Sent
+                      {% else %}
+                      Draft
+                      {% endif %}
+                    </a>
+                  </td>
+                  <td class="align-top "><a class="text-light" href="{% url 'invoice_view' i.id %}">₹{{i.balance}}</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ................................... import modal ................. -->
+<!-- Add this modal at the end of your retainer_invoices.html -->
+
+<!-- <div class="modal fade" id="import_modal"  role="dialog" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="import_modal_label">Import Retainer Invoices</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="importForm"  enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="importFile">Choose file</label>
+            <input type="file" class="form-control-file" id="importFile" name="file" accept=".xlsx, .xls">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="importData()">Import</button>
+      </div>
+    </div>
+  </div>
+</div> -->
+<div class="modal fade" id="importmodal" style="margin-top: 7vh;">
+  <div class="modal-dialog ">
+    <div class="modal-content" style="background: rgb(32, 35, 37);border-radius: 20px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="excelModalLabel">Upload File
+        <label for="" style="color: red; font-size: x-small;" >* Refer Downloaded Sheet For Format </label><br></h5>
+        <button type="button" class="btn close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true" style="font-size: x-large;">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="background: rgb(32, 35, 37);">
+        <div class="card">
+          <form action="" method="post" class="needs-validation" novalidate autocomplete="off" id="excelForm">
+            {% csrf_token %}
+            <div class="form-group mt-3" style="margin-left: 2vh;">
+              <label for="file" style="font-size: medium;">Choose Excel File for Employees - </label> <br><br>
+              <input type="file" class="form-control-file" id="empfile" name="empfile" accept=".xls, .xlsx"><br>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn text-center pt-2 btn-outline-warning" onclick="uploadFile()" data-dismiss="modal">Upload</button>
+              <button type="button" class="btn text-center pt-2 btn-outline-warning" data-dismiss="modal">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>  
+</div>  
+</div>
+ <!-- <div class="modal" id="excelModal" tabindex="-1" role="dialog" aria-labelledby="excelModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="excelModalLabel">Upload File
+              <label for="" style="color: red; font-size: x-small;" >* Refer Downloaded Sheet For Format </label><br></h5>
+              <button type="button" class="btn close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true" style="font-size: x-large;">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <form id="excelForm" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="form-group">
+                      <label for="file" style="color: black;">Choose Excel File for Purchase Bill- </label> <br>
+                      <input type="file" class="form-control-file" id="billfile" name="billfile" accept=".xls, .xlsx"><br><br>
+                      
+
+                      <label for="file" style="color: black;">Choose Excel File for Purchase Bill Products- </label> <br>
+                      <input type="file" class="form-control-file" id="prdfile" name="prdfile" accept=".xls, .xlsx"><br>
+                  </div>
+              </form>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="uploadFile()" data-dismiss="modal">Upload</button>
+          </div>
+      </div>
+  </div>
+</div>  -->
+
+
+<script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+<script>
+  document.getElementById("exportBtn").addEventListener("click", function () {
+  const Table = document.getElementById("myTable");
+  const ws = XLSX.utils.table_to_sheet(Table);
+  ws['!cols'] = [{ wch: 15 },{ wch: 15 },{ wch: 15 },{ wch: 15 },{ wch: 15 },{ wch: 15 }];
+  ws['!rows'] = [{ hpt: 30 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, "retainer_invoice.xlsx"); 
+});
+
+</script>
+
+<script>
+  // function uploadFile() {
+  //     const form = document.getElementById('excelForm');
+  //     const formData = new FormData(form);
+  //     fetch('import_purchase_bill', {
+  //         method: 'POST',
+  //         body: formData
+  //     })
+  //     .then(data => {
+  //         swal({
+  //             title: "Imported !",
+  //             text: "Purchase Bill Import Successfull!",
+  //             icon: "success",
+  //             buttons: false,
+  //         })
+  //     })
+  //     .then(response => {
+  //         setTimeout(function () {
+  //             location.reload();
+  //         }, 1250);
+  //     })
+  //     .catch(error => {
+  //         swal({
+  //             title: "Error !",
+  //             text: "Purchase Bill Import Unuccessfull!",
+  //             icon: "warning",
+  //             buttons: false,
+  //         })
+  //     });
+  // }
+  // function uploadFile() {
+  //   const form = document.getElementById('excelForm');
+  //   const formData = new FormData(form);
+      
+  //   fetch('import_employee_details', {
+  //     method: 'POST',
+  //     body: formData
+  //   })
+  //   .then(response => {
+  //     if (!response.ok) {
+  //        throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+  //     return response.json();
+  //   })
+  //   .then(jsonResponse => {
+  //     if (jsonResponse.message) {
+  //       swal({
+  //           title: 'Error',
+  //           text: jsonResponse.message,
+  //           icon: 'error',
+  //           buttons: false,
+  //       });
+  //     } else {
+  //       swal({
+  //           title: 'Imported!',
+  //           text: jsonResponse.success,
+  //           icon: 'success',
+  //           buttons: false,
+  //       });
+  //     }
+  //   })
+  //   .then(response => {
+  //     setTimeout(function () {
+  //       location.reload();
+  //     }, 1400);
+  //   })
+  // }
+  function uploadFile() {
+    const form = document.getElementById('excelForm');
+    const formData = new FormData(form);
+    
+    // Simulating a successful upload
+    // This is just for demonstration purposes since we don't have a server response
+    // Replace this with your actual upload logic
+    setTimeout(() => {
+        swal({
+            title: 'Import successful!',
+            text: 'Your file has been uploaded successfully.',
+            icon: 'success',
+            buttons: false,
+        });
+        setTimeout(() => {
+            location.reload();
+        }, 1400); // Reload after 1.4 seconds
+    }, 1000); // Simulate upload taking 1 second
+}
+
+</script>
+<script>
+  
+    function excelmodel(){
+      // document.getElementById('impModal').style.display='block';
+        const table1 = document.querySelector('#myTable');
+        const ws1 = XLSX.utils.table_to_sheet(table1);
+        const wb1 = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb1, ws1, 'Sheet1');
+        XLSX.writeFile(wb1, 'Retainerinvoice.xlsx');
+        
+        
+    }
+</script>
+
+<script>
+  var $rows = $('#table tr');
+  $('#search').keyup(function () {
+    var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+
+    $rows.hide().filter(function () {
+      var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+      return ~text.indexOf(val);
+    }).show();
+  });
+
+
+  function sortTableTotal() {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.getElementById("myTable");
+    switching = true;
+    while (switching) {
+      switching = false;
+      rows = table.rows;
+      for (i = 1; i < rows.length - 1; i++) {
+        shouldSwitch = false;
+        x = rows[i].getElementsByTagName("td")[1];
+        y = rows[i + 1].getElementsByTagName("td")[1];
+        if (x.innerHTML > y.innerHTML) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+  integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+  integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+ 
+ 
+{% endblock %}

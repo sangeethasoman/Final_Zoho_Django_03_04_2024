@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        .pdf-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+    
+        .pdf-table th, .pdf-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>    
+      <div class="row text-dark" style="text-align: center;">
+        <div class="col-md-6">
+            <h3 class="text-uppercase py-2" style="font-size: 20px;">{{company.company_name}}
+            </h3>
+            <p ><b>Address: </b>{{company.city}}, {{company.state}}, Pin: {{company.pincode}}</p>
+              <p><b>Phone: </b>{{ company.contact_number}}</p>
+              <p><b>Email: </b>{{ company.company_email }}</p>
+          </div>
+        <div class="col-md-6" style="text-align: left;">
+          <br>
+          <p ><b>Purchase Order No: </b>{{po_item.Pur_no}}</p>
+          <p ><b>Vendor Name: </b>{{po_item.vendor_name}}</p>
+          <p ><b>Vendor Email: </b>{{po_item.vendor_mail}}</p>
+          <p ><b>Address: </b>{{po_item.vendor_address}}</p>
+          <p><b>Vendor Place of Supply: </b>{{po_item.source_supply}}</p>
+          {% if po_item.typ == "Customer" %}
+          <p ><b>Customer Name: </b>{{po_item.customer_name}}</p>
+          <p ><b>Customer Email: </b>{{po_item.customer_mail}}</p>
+          <p ><b>Address: </b>{{po_item.customer_address}}</p>
+          <p ><b>Customer Place of Supply: </b>{{po_item.customer_source_supply}}</p>
+          {% else %}
+          <p ><b>Organization Name: </b>{{po_item.Org_name}}</p>
+          <p ><b>Organization Email: </b>{{po_item.Org_mail}}</p>
+          {% endif %}
+            <p><b>Order Date: </b>{{po_item.Ord_date}}</p>
+           <p><b>Expected Delivery: </b>{{po_item.exp_date}}</p>
+        </div>
+      </div> 
+      <div style="text-align: center;">
+          <table class="transaction_table table text-dark mb-4 pdf-table" id="myTable">
+              <thead>
+              <tr>
+                  <th>
+                      <div class="row">
+                          <div class="col-md-6">PRODUCT</div>
+                      </div> 
+                  </th>
+
+                  <th>
+                      <div class="row">
+                          <div class="col-md-6">HSN</div>
+                      </div> 
+                  </th>
+                  <th>
+                      <div class="row">
+                          <div class="col-md-6">QTY</div>
+                      </div> 
+                  </th>
+                  <th>
+                      <div class="row">
+                          <div class="col-md-6">PRICE</div>
+                      </div> 
+                  </th>
+                  <th>
+                      <div class="row">
+                          <div class="col-md-6">DISCOUNT</div>
+                      </div> 
+                  </th>
+                  <th>
+                    <div class="row">
+                        <div class="col-md-6">TAX</div>
+                    </div> 
+                </th>
+                <th>
+                    <div class="row">
+                        <div class="col-md-6">TOTAL</div>
+                    </div> 
+                </th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for i in pot %}
+              <tr>
+                  <td>{{i.item}}</td>
+                  <td>{{i.hsn}}</td>
+                  <td>{{i.quantity}}</td>
+                  <td>{{i.rate}}</td>
+                  <td>{{i.discount}}</td>
+                  {% if pcom_state == company.state %}
+                  <td>{{i.tax}}% GST</td>
+                  {% else %}
+                  <td>{{i.tax}}% IGST</td>
+                  {% endif %}
+                  <td>{{i.amount}}</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+          </table>
+      </div>
+      <div class="row text-dark">
+          <br>
+          <p ><b>Subtotal: </b>{{po_item.sub_total}}</p>
+          {% if po_item.igst != 0 %}
+          <p ><b>IGST: </b>{{po_item.igst}}</p>
+          {% endif %}
+          {% if po_item.cgst != 0 %}
+            <p><b>CGST: </b>{{po_item.cgst}}</p>
+            {% endif %}
+            {% if po_item.sgst != 0 %}
+           <p><b>SGST: </b>{{po_item.sgst}}</p>
+           {% endif %}
+           {% if po_item.tax_amount != 0 %}
+           <p><b>Tax Amount: </b>{{po_item.tax_amount}}</p>
+           {% endif %}
+           {% if po_item.shipping_charge != 0 %}
+           <p><b>Shipping Charge: </b>{{po_item.shipping_charge}}</p>
+           {% endif %}
+           {% if po_item.adjustment_charge %}
+           <p><b>Adjustment: </b>{{po_item.adjustment_charge}}</p>
+           {% endif %}
+           <p><b>Grand Total: </b>{{po_item.grand_total}}</p>
+      </div> 
+</body>
+</html>

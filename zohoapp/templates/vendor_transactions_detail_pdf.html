@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        .pdf-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+    
+        .pdf-table th, .pdf-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+        <div class="row text-dark" style="text-align: center;">
+          <div class="col-md-8">
+            <br>
+            <h3 class="text-uppercase py-2" style="font-size: 20px;">{{vdata2.first_name}} {{vdata2.last_name}}
+            </h3>
+            {% if vdata2.vendor_mphone %}
+            <p >Phone : {{vdata2.vendor_mphone}}</p>
+            {% endif %}
+            {% if vdata2.vendor_email %}
+            <p >Email : {{vdata2.vendor_email}}</p>
+            {% endif %}
+            
+          </div>
+          <div class="col-md-4">
+            <br>
+            {% if vdata2.baddress %}
+            <p>Address : {{vdata2.baddress}}</p>
+            {% endif %}
+            {% if vdata2.gst_number %}
+            <p>GSTIN : {{vdata2.gst_number}}</p>
+            {% endif %}
+            {% if vdata2.opening_bal %}
+            <p>OPENING BALANCE : {{vdata2.opening_bal}}</p>
+            {% endif %}
+            <p>Credit Limit: {{vdata2.credit_limit}}</p>
+          </div>
+          <hr>
+        </div> 
+        
+        <div style="text-align: center;">
+            <h6 class="text-dark text-uppercase py-2">TRANSACTIONS</h6>
+            <table class="transaction_table table text-dark mb-4 pdf-table" id="myTable">
+                <thead>
+                <tr>
+                    <th></th>
+                  
+                    <th>
+                        <div class="row">
+                            <div class="col-md-6">TYPE</div>
+                        </div> 
+                    </th>
+
+                    <th>
+                        <div class="row">
+                            <div class="col-md-6">NUMBER</div>
+                        </div> 
+                    </th>
+                    <th>
+                        <div class="row">
+                            <div class="col-md-6">DATE</div>
+                        </div> 
+                    </th>
+                    <th>
+                        <div class="row">
+                            <div class="col-md-6">TOTAL</div>
+                        </div> 
+                    </th>
+                    <th>
+                        <div class="row">
+                            <div class="col-md-6">BALANCE</div>
+                        </div> 
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vc in vendor_credits %}
+                <tr>
+                    <td><span class="dot vc-dot"></span></td>
+                    <td>Vendor Credits</td>
+                    <td>{{ vc.credit_note }}</td>
+                    <td>{{ vc.vendor_date }}</td>
+                    <td><i class="fa fa-inr"></i> {{ vc.grand_total }}</td>
+                    <td><i class="fa fa-inr"></i> {{ vc.grand_total }}</td>
+                </tr>
+                {% endfor %}
+                {% for exp in expence %}
+                <tr>
+                    <td><span class="dot exp-dot"></span></td>
+                    <td>Expense</td>
+                    <td>{{ exp.invoice }}</td>
+                    <td>{{ exp.date }}</td>
+                    <td><i class="fa fa-inr"></i> {{ exp.amount }}</td>
+                    <td><i class="fa fa-inr"></i> {{ exp.amount }}</td>
+                </tr>
+                {% endfor %}
+                {% for r_exp in recurring_expense %}
+                <tr>
+                    <td><span class="dot re-dot"></span></td>
+                    <td>Recurring Expense</td>
+                    <td>{{ r_exp.profile_name }}</td>
+                    <td>{{ r_exp.start_date }}</td>
+                    <td><i class="fa fa-inr"></i> {{ r_exp.amount }}</td>
+                    <td><i class="fa fa-inr"></i> {{ r_exp.amount }}</td>
+                </tr>
+                {% endfor %}
+                {% for po in purchase_ordr %}
+                <tr>
+                    <td><span class="dot po-dot"></span></td>
+                    <td>Purchase Order</td>
+                    <td>{{ po.Pur_no }}</td>
+                    <td>{{ po.Ord_date }}</td>
+                    <td><i class="fa fa-inr"></i> {{ po.grand_total }}</td>
+                    <td><i class="fa fa-inr"></i> {{ po.grand_total }}</td>
+                </tr>
+                {% endfor %}
+                {% for pm in paymnt_made %}
+                <tr>
+                    <td><span class="dot pm-dot"></span></td>
+                    <td>Payment Made</td>
+                    <td>{{ pm.Pur_no }}</td>
+                    <td>{{ pm.date }}</td>
+                    <td><i class="fa fa-inr"></i> {{ pm.amount }}</td>
+                    <td><i class="fa fa-inr"></i> {{ pm.amount }}</td>
+                </tr>
+                {% endfor %}
+                {% for pb in purchase_bill %}
+                <tr>
+                    <td><span class="dot pb-dot"></span></td>
+                    <td>Purchase Bills</td>
+                    <td>{{ pb.bill_no }}</td>
+                    <td>{{ pb.bill_date }}</td>
+                    <td><i class="fa fa-inr"></i> {{ pb.total }}</td>
+                    <td><i class="fa fa-inr"></i> {{ pb.total }}</td>
+                </tr>
+                {% endfor %}
+                {% for rb in recurring_bill %}
+                <tr>
+                    <td><span class="dot rb-dot"></span></td>
+                    <td>Recurring Bills</td>
+                    <td>{{ rb.bill_no }}</td>
+                    <td>{{ rb.start_date }}</td>
+                    <td><i class="fa fa-inr"></i> {{ rb.grand_total }}</td>
+                    <td><i class="fa fa-inr"></i> {{ rb.grand_total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </table>
+        </div>
+</body>
+
+</html>

@@ -1,0 +1,121 @@
+
+======================VIEWS UPDATE ====================
+
+def get_vendor_gst_treatment(request):
+    v_user = request.user
+    user = User.objects.get(id=v_user.id)
+
+    vendor_name = request.GET.get('vendor') 
+    if vendor_name: 
+        try:
+            vendor = vendor_table.objects.get(id=vendor_name, user=user)
+            gst_treatment = vendor.gst_treatment
+            email = vendor.vendor_email 
+            gstin = vendor.gst_number 
+            sourcesupply=vendor.source_supply 
+            address=vendor.baddress
+            city=vendor.bcity
+            state=vendor.bstate
+            country=vendor.bcountry
+            print(" source ........................ of ....................... supply")
+            
+
+        except vendor_table.DoesNotExist:
+            gst_treatment = None
+            gstin = None
+
+        print(f"Vendor Name: {vendor_name}, GST Treatment: {gst_treatment}, GSTIN: {gstin}")
+
+        return JsonResponse({'gst_treatment': gst_treatment, 'gstin': gstin,'sourcesupply':sourcesupply,'address':address,'city':city,'state':state,'country':country,'email':email})
+    
+    else:
+     
+        return JsonResponse({'gst_treatment': None, 'gstin': None})
+
+
+
+
+
+
+=======================VIEWS NEW-==================
+
+
+
+
+
+def new_emp(request):
+    # company = company_details.objects.get(user = request.user)
+
+    if request.method=='POST':
+
+        # title=request.POST.get('title')
+        # first_name=request.POST.get('firstname')
+        # last_name=request.POST.get('lastname')
+        # comp=request.POST.get('company_name')
+        title = request.POST.get('title')
+        fname = request.POST.get('fname')
+        lname = request.POST.get('lname')
+        # name=name1.upper()
+        alias = request.POST.get('alias')
+        joindate=request.POST.get('joindate')
+        sal=request.POST.get('sal')
+        fsalary=request.POST.get('fsalary')
+        # amnt=request.POST.get('amnt')
+        # hours = request.POST.get('hours')
+        # vsalary = request.POST.get('vsalary')
+        empnum = request.POST.get('empnum')
+        location = request.POST.get('location')
+        dropId3 = request.POST.get('dropId3')
+        dob=request.POST.get('dob')
+        blood=request.POST.get('blood')
+        # panno=request.POST.get('panno')
+        faname=request.POST.get('faname')
+        spname = request.POST.get('spname')
+        padrs1=request.POST.get('padrs1')
+        padrs2=request.POST.get('padrs2')
+        adrs1=request.POST.get('adrs1')
+        adrs2=request.POST.get('adrs2')
+        phone=request.POST.get('phone')
+        ephone=request.POST.get('ephone')
+        email=request.POST.get('email')
+        # file=request.POST.get('file')
+        acc_no=request.POST.get('acc_no')
+        ifsc=request.POST.get('ifsc')
+        b_name=request.POST.get('b_name')
+        branch=request.POST.get('branch')
+        ttype=request.POST.get('ttype')
+        tds=request.POST.get('tds')
+        pora=request.POST.get('pora')
+        pcnt=request.POST.get('pcnt')
+        amnt=request.POST.get('amnt')
+        itn=request.POST.get('itn')
+        an=request.POST.get('an')
+        # status="active"
+
+        uan=request.POST.get('uan')
+        pfn=request.POST.get('pfn')
+        pran=request.POST.get('pran')
+       
+
+        u = User.objects.get(id = request.user.id)
+        print("helloooooooooooooooooooo")
+        print(lname)
+        cust = Payroll(title=title,first_name=fname,last_name=lname,alias=alias,joindate=joindate,salary_type=sal,user=u,email=email)
+        cust.save()
+# ,salary=fsalary,emp_number=empnum,location=location,
+#                          gender=dropId3,dob=dob,blood=blood,parent=faname,spouse_name=spname,address=padrs1,permanent_address=padrs2,Phone=phone,emergency_phone=ephone,
+#                          email=email,ITN=itn,Aadhar=an,UAN=uan,PFN=pfn,PRAN=pran,isTDS=itn,TDS=tds,
+        return HttpResponse({"messages": "success"})
+
+
+        
+def emp_dropdownE(request):
+    user = User.objects.get(id=request.user.id)
+
+    options = {}
+    option_objects = Payroll.objects.filter(user=user)
+    for option in option_objects:
+        display_name = option.first_name
+        options[option.id] = [display_name, f"{display_name}"]
+        
+    return JsonResponse(options)
